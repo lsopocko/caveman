@@ -1,7 +1,3 @@
-export function sum(a, b){
-	return a+b;
-}
-
 export function bound(x, min, max) {
     return Math.max(min, Math.min(max, x));
 }
@@ -59,32 +55,3 @@ export class Sprite{
 	}
 }
 
-export class Game{
-	constructor(){
-
-	}
-	update(h){
-		h();
-
-	}
-	render(dt){
-		Screen.context.clearRect(0, 0, Screen.canvas.width, Screen.canvas.height);
-	}
-	init(h){
-		h();
-		//Screen.create('screen');
-		this.frame();
-	}
-	frame(){
-			now = timestamp();
-			this.dt = this.dt + Math.min(1, (now - last) / 1000);
-			while(this.dt > step){
-				this.dt = this.dt - step;
-				this.update(step);
-			}
-			this.render(this.dt);
-			last = now;
-			const that = this;
-			requestAnimationFrame(function(){that.frame()}, Screen.canvas);
-	}
-}

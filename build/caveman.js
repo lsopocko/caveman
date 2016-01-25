@@ -16,10 +16,6 @@ if (!window.requestAnimationFrame) {
 	};
 }
 
-var Screen = require('./lib/screen.js');
-var Camera = require('./lib/camera.js');
-var Events = require('./lib/events.js');
-
 var unit = 16,
     gravity = 16 * 9.8 * 6,
     fps = 60,
@@ -28,19 +24,53 @@ var unit = 16,
 var now = undefined,
     last = helpers.timestamp();
 
-var Caveman = new helpers.Game();
+var Screen = require('./lib/screen.js');
+var Camera = require('./lib/camera.js');
+var Events = require('./lib/events.js');
 
-Caveman.init(function () {
-	window.addEventListener('keyup', function (event) {
-		Events.onKeyup(event);
-	}, false);
-	window.addEventListener('keydown', function (event) {
-		Events.onKeydown(event);
-	}, false);
+var Caveman = {
+	ticks: 0,
 
-	var player = new _characters.Princess({});
-	console.log(player);
-});
+	init: function init() {
+		window.addEventListener('keyup', function (event) {
+			Events.onKeyup(event);
+		}, false);
+		window.addEventListener('keydown', function (event) {
+			Events.onKeydown(event);
+		}, false);
+
+		var player = new _characters.Player({});
+	},
+	render: function render(dt) {
+		Screen.clear();
+		this.ticks++;
+	},
+	update: function update(dt) {},
+	frame: function (_frame) {
+		function frame() {
+			return _frame.apply(this, arguments);
+		}
+
+		frame.toString = function () {
+			return _frame.toString();
+		};
+
+		return frame;
+	}(function () {
+		now = helpers.timestamp();
+		this.dt = this.dt + Math.min(1, (now - last) / 1000);
+		while (this.dt > step) {
+			this.dt = this.dt - step;
+			this.update(step);
+		}
+		this.render();
+		last = now;
+		that = this;
+		requestAnimationFrame(function () {
+			return frame();
+		}, Screen.canvas);
+	})
+};
 
 // var Caveman = {
 // 	init(){
@@ -52,7 +82,7 @@ Caveman.init(function () {
 // 	}
 // }
 
-//Caveman.init();
+Caveman.init();
 },{"./lib/camera.js":2,"./lib/characters":3,"./lib/events.js":4,"./lib/helpers":5,"./lib/screen.js":6}],2:[function(require,module,exports){
 "use strict";
 
@@ -458,15 +488,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.sum = sum;
 exports.bound = bound;
 exports.timestamp = timestamp;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function sum(a, b) {
-	return a + b;
-}
 
 function bound(x, min, max) {
 	return Math.max(min, Math.min(max, x));
@@ -528,49 +553,6 @@ var Sprite = exports.Sprite = function () {
 
 	return Sprite;
 }();
-
-var Game = exports.Game = function () {
-	function Game() {
-		_classCallCheck(this, Game);
-	}
-
-	_createClass(Game, [{
-		key: 'update',
-		value: function update(h) {
-			h();
-		}
-	}, {
-		key: 'render',
-		value: function render(dt) {
-			Screen.context.clearRect(0, 0, Screen.canvas.width, Screen.canvas.height);
-		}
-	}, {
-		key: 'init',
-		value: function init(h) {
-			h();
-			//Screen.create('screen');
-			this.frame();
-		}
-	}, {
-		key: 'frame',
-		value: function frame() {
-			now = timestamp();
-			this.dt = this.dt + Math.min(1, (now - last) / 1000);
-			while (this.dt > step) {
-				this.dt = this.dt - step;
-				this.update(step);
-			}
-			this.render(this.dt);
-			last = now;
-			var that = this;
-			requestAnimationFrame(function () {
-				that.frame();
-			}, Screen.canvas);
-		}
-	}]);
-
-	return Game;
-}();
 },{}],6:[function(require,module,exports){
 'use strict';
 
@@ -590,6 +572,9 @@ module.exports = {
 		this.context.scale(2, 2);
 		this.center();
 		return this.context;
+	},
+	clear: function clear() {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	},
 	resize: function resize(width, height) {
 		this.canvas.width = width;

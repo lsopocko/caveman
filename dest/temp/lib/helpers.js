@@ -5,15 +5,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.sum = sum;
 exports.bound = bound;
 exports.timestamp = timestamp;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function sum(a, b) {
-	return a + b;
-}
 
 function bound(x, min, max) {
 	return Math.max(min, Math.min(max, x));
@@ -74,47 +69,4 @@ var Sprite = exports.Sprite = function () {
 	}]);
 
 	return Sprite;
-}();
-
-var Game = exports.Game = function () {
-	function Game() {
-		_classCallCheck(this, Game);
-	}
-
-	_createClass(Game, [{
-		key: 'update',
-		value: function update(h) {
-			h();
-		}
-	}, {
-		key: 'render',
-		value: function render(dt) {
-			Screen.context.clearRect(0, 0, Screen.canvas.width, Screen.canvas.height);
-		}
-	}, {
-		key: 'init',
-		value: function init(h) {
-			h();
-			//Screen.create('screen');
-			this.frame();
-		}
-	}, {
-		key: 'frame',
-		value: function frame() {
-			now = timestamp();
-			this.dt = this.dt + Math.min(1, (now - last) / 1000);
-			while (this.dt > step) {
-				this.dt = this.dt - step;
-				this.update(step);
-			}
-			this.render(this.dt);
-			last = now;
-			var that = this;
-			requestAnimationFrame(function () {
-				that.frame();
-			}, Screen.canvas);
-		}
-	}]);
-
-	return Game;
 }();

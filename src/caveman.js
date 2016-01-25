@@ -11,28 +11,49 @@ if (!window.requestAnimationFrame) { // http://paulirish.com/2011/requestanimati
 import * as helpers from "./lib/helpers";
 import {Player, Enemy, Princess} from "./lib/characters";
 
-var Screen = require('./lib/screen.js');
-var Camera = require('./lib/camera.js');
-var Events = require('./lib/events.js');
-
-
-
 const unit = 16,
 	gravity = 16 * 9.8 * 6,
 	fps = 60,
 	step = 1/fps;
 
-let now, last = helpers.timestamp(); 
+let now, last = helpers.timestamp();
 
-var Caveman = new helpers.Game();
+let Screen = require('./lib/screen.js');
+let Camera = require('./lib/camera.js');
+let Events = require('./lib/events.js');
 
-Caveman.init(function(){
-	window.addEventListener('keyup', function(event) { Events.onKeyup(event); }, false);
-	window.addEventListener('keydown', function(event) { Events.onKeydown(event); }, false);
+let Caveman = {
+	ticks:0,
 
-	const player = new Princess({});
-	console.log(player);
-});
+	init(){
+		window.addEventListener('keyup', function(event) { Events.onKeyup(event); }, false);
+		window.addEventListener('keydown', function(event) { Events.onKeydown(event); }, false);
+
+		const player = new Player({});
+	},
+	render(dt){
+		Screen.clear();
+		this.ticks++;
+	},
+	update(dt){
+		
+	},
+	frame(){
+		now = helpers.timestamp();
+		this.dt = this.dt + Math.min(1, (now - last) / 1000);
+		while(this.dt > step){
+			this.dt = this.dt - step;
+			this.update(step);
+		}
+		this.render();
+		last = now;
+		that = this;
+		requestAnimationFrame(() => frame(), Screen.canvas);
+	}
+}
+
+
+
 
 // var Caveman = {
 // 	init(){
@@ -44,4 +65,4 @@ Caveman.init(function(){
 // 	}
 // }
 
-//Caveman.init();
+Caveman.init();

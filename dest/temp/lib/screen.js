@@ -17,6 +17,9 @@ module.exports = {
 		this.center();
 		return this.context;
 	},
+	clear: function clear() {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	},
 	resize: function resize(width, height) {
 		this.canvas.width = width;
 		this.canvas.height = height;
