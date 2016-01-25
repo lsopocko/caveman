@@ -25,15 +25,13 @@ var gulp = require('gulp'),
 	  	return browserify(['dest/temp/caveman.js']).bundle()
 	    .pipe(source('caveman.js'))
 	    .pipe(buffer())
-	    //.pipe(uglify())
+	    .pipe(uglify())
 	    .pipe(rename('caveman.js'))
 	    .pipe(gulp.dest("build"));
 	});
 
 	gulp.task('watch', function() {
-		gulp.watch(['src/*.js','src/**/*.js'], ['commonjs']);
+		gulp.watch(['src/*.js','src/**/*.js'], ['commonjs-bundle']);
  	});
 
 	gulp.task('default', ['watch']);
-
-	gulp.task('commonjs', ['commonjs-bundle']);
