@@ -1,3 +1,11 @@
 import * as helpers from "./lib/helpers";
+var Screen = require('./lib/screen.js');
 
-console.log(helpers.sum(5,5));
+var Caveman = {
+	init(){
+		Screen.create('screen');
+		console.log('test');
+	}
+}
+
+Caveman.init();
