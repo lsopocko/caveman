@@ -1,68 +1,138 @@
-if (!window.requestAnimationFrame) { // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-	window.requestAnimationFrame = 	window.webkitRequestAnimationFrame || 
-                               		window.mozRequestAnimationFrame    || 
-                               		window.oRequestAnimationFrame      || 
-                               		window.msRequestAnimationFrame     || 
-                               		function(callback, element) {
-                                 		window.setTimeout(callback, 1000 / 60);
-                               }
-}
+window.onload = function(){
 
-import * as helpers from "./lib/helpers";
-import {Player, Enemy, Princess} from "./lib/characters";
+	Camera = {	margin: 100,
+				offset: {x: 0, y: 0}}
 
-const unit = 16,
-	gravity = 16 * 9.8 * 6,
-	fps = 60,
-	step = 1/fps;
+	tiles = new Image();
+	tiles.src = '/assets/sprites/tiles.png';
 
-let now, last = helpers.timestamp();
+	var Screen = new DrawingContext('screen');
+	var Caveman = new Platformer(Screen);
+	var Keyboard = new KeyboardEvents();
+	var Map = new MapGenerator(json_map, tiles, Screen);
 
-let Screen = require('./lib/screen.js');
-let Camera = require('./lib/camera.js');
-let Events = require('./lib/events.js');
+	var cPlayer = new Player({	position: new Vector2d(4*16, 4*16),
+								spawn: new Vector2d(4*16, 4*16),
+								sprite: new Sprite('/assets/sprites/player.png', Screen, 16, 16)});
 
-let Caveman = {
-	ticks:0,
+	cPlayer.update = function(dt, Key){
 
-	init(){
-		window.addEventListener('keyup', function(event) { Events.onKeyup(event); }, false);
-		window.addEventListener('keydown', function(event) { Events.onKeydown(event); }, false);
+		var wasleft = this.dx < 0,
+			wasright = this.dx > 0,
+			falling = this.falling,
+			friction = this.friction * (falling ? 0.5 : 1),
+			acceleration = this.acceleration * (falling ? 0.5 : 1);
 
-		const player = new Player({});
-	},
-	render(dt){
-		Screen.clear();
-		this.ticks++;
-	},
-	update(dt){
-		
-	},
-	frame(){
-		now = helpers.timestamp();
-		this.dt = this.dt + Math.min(1, (now - last) / 1000);
-		while(this.dt > step){
-			this.dt = this.dt - step;
-			this.update(step);
+		this.ddx = 0;
+		this.ddy = Caveman.gravity;
+
+		if(!this.dead){
+			if (Key.isDown(Key.LEFT))
+		      	this.ddx = this.ddx - acceleration;
+		    else if (wasleft)
+		      	this.ddx = this.ddx + friction;
+
+			if (Key.isDown(Key.RIGHT))
+		      	this.ddx = this.ddx + acceleration;
+		    else if (wasright)
+		      	this.ddx = this.ddx - friction;
+
+	      	if (Key.isDown(Key.SPACE) && !this.jumping && !falling) {
+
+				this.ddy = this.ddy - this.jump_height;
+				this.jumping = true;
+				//Game.jumpAudio.play();
+		    }
+
+		    if(Key.isDown(Key.RIGHT) || wasright){
+		    	this.moveRight();
+		    }
+
+		    if(Key.isDown(Key.LEFT) || wasleft){
+		    	this.moveLeft();
+		    }
+
+		    if(Key.isDown(Key.SPACE) && (Key.isDown(Key.LEFT) || wasleft)){
+		    	this.jumpLeft();
+		    }else if(Key.isDown(Key.SPACE) && (Key.isDown(Key.RIGHT) || wasright)){
+		    	this.jumpRight();	
+		    }else if(!Key.isDown(Key.SPACE) && !Key.isDown(Key.LEFT) && !Key.isDown(Key.RIGHT) && !wasright && !wasleft && !this.falling){
+		    	this.stop();
+		    }
+
+		    horizontal_movement = Math.round(dt * this.dx);
+
+		    if(((this.position.x*2)) >= Screen.canvas.width-Camera.margin && (Key.isDown(Key.RIGHT) || wasright) && (Camera.offset.x+Screen.canvas.width < (((Map.json_map.width*Map.json_map.tilewidth)*2)-Camera.offset.x))){
+		    	this.position.x = this.position.x;
+		    	Camera.offset.x += horizontal_movement;
+		    }else if(((this.position.x*2)) <= Camera.margin && (Key.isDown(Key.LEFT) || wasleft) && Camera.offset.x > 0){
+		    	this.position.x = this.position.x;
+		    	Camera.offset.x += horizontal_movement;
+		    }else{
+		    	this.position.x = this.position.x + horizontal_movement;
+		    }
+
+		    vertical_movement = Math.round(dt * this.dy);
+
+		    if(((this.position.y*2) >= Screen.canvas.height-Camera.margin && !this.jumping) && (Camera.offset.y+Screen.canvas.height < (((Map.json_map.height*Map.json_map.tileheight)*2)-Camera.offset.y))){
+		    	this.position.y = this.position.y;
+		    	Camera.offset.y += vertical_movement;
+		    }else if((this.position.y*2) <= Screen.canvas.height-Camera.margin && this.jumping && Camera.offset.y > 0){
+		    	this.position.y = this.position.y;
+		    	Camera.offset.y += vertical_movement;
+		    }else{
+		    	this.position.y = this.position.y + vertical_movement;
+		    }
+
+		    this.dx = bound(this.dx + (dt * this.ddx), -this.max_vx, this.max_vx);
+		    this.dy = bound(this.dy + (dt * this.ddy), -this.max_vy, this.max_vy);
+
+		    
+
+		    if ((wasleft  && (this.dx > 0)) ||
+		        (wasright && (this.dx < 0))) {
+		      	this.dx = 0; // clamp at zero to prevent friction from making us jiggle side to side
+		    }
+
+		    if(vertical_movement > 0){
+		    	this.falling = true;
+		    }
+
+		    this.checkForCollisions(Map.coliders);
+		    // this.checkForPowerUps();
+		    // this.checkForCoins();
+		    // this.checkForEnemies();
+
+		}else{
+			this.dx = 0;
+			this.dy = 0;
+			this.ddx = 0;
+
+			if(timestamp() >= this.time_of_dead+this.respawn_after){
+				this.respawn();
+			}
 		}
-		this.render();
-		last = now;
-		that = this;
-		requestAnimationFrame(() => frame(), Screen.canvas);
 	}
+
+	Caveman.onInit(function(){
+		window.addEventListener('keyup', function(event) { Keyboard.onKeyup(event); }, false);
+		window.addEventListener('keydown', function(event) { Keyboard.onKeydown(event); }, false);
+		Map.generateTiles();
+		Map.loadObjects();
+	})
+
+	Caveman.onRender(function(){
+		//console.log(Camera.offset);
+		Map.drawMap(Camera.offset.x, Camera.offset.y);
+		cPlayer.draw();
+	})
+
+	Caveman.onUpdate(function(dt){
+		cPlayer.update(dt, Keyboard);
+	})
+
+	tiles.onload = function(){
+		Caveman.init();
+	}
+
 }
-
-
-
-
-// var Caveman = {
-// 	init(){
-// 		window.addEventListener('keyup', function(event) { Events.onKeyup(event); }, false);
-// 		window.addEventListener('keydown', function(event) { Events.onKeydown(event); }, false);
-
-// 		const player = new Princess({});
-// 		console.log(player);
-// 	}
-// }
-
-Caveman.init();
