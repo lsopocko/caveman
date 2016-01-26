@@ -13,7 +13,7 @@ window.onload = function(){
 
 	var cPlayer = new Player({	position: new Vector2d(4*16, 4*16),
 								spawn: new Vector2d(4*16, 4*16),
-								sprite: new Sprite('/assets/sprites/player.png', Screen, 16, 16)});
+								sprite: new Sprite('/assets/sprites/player.png', Screen, 16, 16, 3)});
 
 	cPlayer.update = function(dt, Key){
 
@@ -117,13 +117,15 @@ window.onload = function(){
 	Caveman.onInit(function(){
 		window.addEventListener('keyup', function(event) { Keyboard.onKeyup(event); }, false);
 		window.addEventListener('keydown', function(event) { Keyboard.onKeydown(event); }, false);
+		Caveman.addSprite('items', new Sprite('/assets/sprites/items.png', Screen, 16, 16, 5));
+		console.log(Caveman.getSprite('items'));
 		Map.generateTiles();
 		Map.loadObjects();
 	})
 
 	Caveman.onRender(function(){
-		//console.log(Camera.offset);
 		Map.drawMap(Camera.offset.x, Camera.offset.y);
+		Map.drawCoins(Caveman.getSprite('items'), Camera.offset.x, Camera.offset.y, Caveman.ticks);
 		cPlayer.draw();
 	})
 

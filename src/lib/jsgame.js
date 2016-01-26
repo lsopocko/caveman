@@ -76,7 +76,7 @@ function Vector2d(x, y){
 
 // Sprite prototype
 
-function Sprite(filename, screen, width, hegiht){
+function Sprite(filename, screen, width, hegiht, ticks_per_frame){
 
 	this.image = null; 
 	this.width = width;
@@ -84,7 +84,7 @@ function Sprite(filename, screen, width, hegiht){
 	this.sourceX = 0;
 	this.sourceY = 0;
 	this.pattern = null;
-	this.ticksPerFrame = 3;
+	this.ticks_per_frame = ticks_per_frame;
 	this.screen = screen;
 
 	if(filename != undefined && filename != "" && filename != null){
@@ -358,6 +358,18 @@ MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	});			
 }
 
+MapGenerator.prototype.drawCoins = function(sprite, offset_x, offset_y, ticks){
+	sprite.sourceY = 16;
+	if(!(ticks%sprite.ticks_per_frame)){
+		sprite.sourceX = sprite.sourceX == 48 ? 0 : sprite.sourceX+16;
+	}
+	this.coins.map(function(coin){
+		if(!coin.deleted){
+			sprite.draw(coin.x-offset_x, (coin.y-coin.height)-offset_y);
+		}
+	});
+}
+
 MapGenerator.prototype.loadObjects = function(){
 	self = this;		
 	this.json_map.layers.map(function(layer){
@@ -389,6 +401,14 @@ MapGenerator.prototype.loadObjects = function(){
 function Platformer(screen){
 	this.callbacks = {init: [], render: [], update: []};
 	this.screen = screen;
+	this.unit = 16;
+	this.gravity =  16 * 9.8 * 6;
+	this.fps = 60;
+	this.step = 1/this.fps;
+	this.now, this.last = timestamp();
+	this.ticks = 0;
+	this.dt = 0;
+	this.sprites = [];
 }
 
 Platformer.prototype.onInit = function (callback){ 
@@ -405,13 +425,7 @@ Platformer.prototype.onUpdate = function (callback){
 } 
 
 Platformer.prototype.init = function(context){
-	this.unit = 16;
-	this.gravity =  16 * 9.8 * 6;
-	this.fps = 60;
-	this.step = 1/this.fps;
-	this.now, this.last = timestamp();
-	this.ticks = 0;
-	this.dt = 0;
+	
 	i = 0;
 	while(i < this.callbacks.init.length){
 		this.callbacks.init[i]();
@@ -445,4 +459,14 @@ Platformer.prototype.frame = function(){
 	this.last = this.now;
 	requestAnimationFrame(() => this.frame(), this.screen.canvas);
 }
+Platformer.prototype.addSprite = function(name, sprite){
+	this.sprites.push({	sprite_name: name, 
+						sprite: sprite});
+}
 
+Platformer.prototype.getSprite = function(name){
+	return this.sprites.filter(function(item){
+		if(item.sprite_name == name) return item;
+	})[0].sprite;
+
+}
