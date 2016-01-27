@@ -24,16 +24,22 @@ function timestamp() {
 
 function DrawingContext(canvas_tag_id){
 
-	w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-	h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+	if(typeof canvas_tag_id != 'undefined'){
+		w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+		h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
-	this.canvas = document.getElementById(canvas_tag_id);
-	this.context = this.canvas.getContext('2d');
+		this.canvas = document.getElementById(canvas_tag_id);
+		this.context = this.canvas.getContext('2d');
 
-	this.resize((Math.floor(w/32))*20, (Math.floor(h/32))*20);
-	this.context.imageSmoothingEnabled = false;
-	this.context.scale(2,2);
-	this.center();	
+		this.resize((Math.floor(w/32))*20, (Math.floor(h/32))*20);
+		this.context.imageSmoothingEnabled = false;
+		this.context.scale(2,2);
+		this.center();	
+	}else{
+		this.canvas = document.createElement('canvas');
+		this.context = this.canvas.getContext('2d');
+	}
+
 }
 
 DrawingContext.prototype.resize =  function(width, height){
@@ -125,6 +131,7 @@ function Character(params){
 	this.dead = false;
 	this.respawn_after = params.hasOwnProperty('respawn_after') ? params.respawn_after : 5*1000;
 	this.time_of_dead = null;
+	this.gravity = 16 * 9.8 * 6;
 
 }
 
@@ -153,6 +160,9 @@ function Enemy(params){
 
 Enemy.prototype = Object.create(Character.prototype);
 Enemy.prototype.constructor = Enemy;
+Enemy.prototype.update = function(dt){
+	
+}
 
 // Player Character prototype
 
@@ -205,9 +215,87 @@ Player.prototype.respawn = function(){
 	this.sprite.sourceX = 16;
 	this.position.x = this.spawn.x;
 	this.position.y = this.spawn.y;
-	Camera.offset.x = 0;
-	Camera.offset.y = 0;
+}
 
+Player.prototype.update = function(dt, Key){
+	var wasleft = this.dx < 0,
+		wasright = this.dx > 0,
+		falling = this.falling,
+		friction = this.friction * (falling ? 0.5 : 1),
+		acceleration = this.acceleration * (falling ? 0.5 : 1);
+
+	this.ddx = 0;
+	this.ddy = this.gravity;
+
+	if(!this.dead){
+		if (Key.isDown(Key.LEFT))
+	      	this.ddx = this.ddx - acceleration;
+	    else if (wasleft)
+	      	this.ddx = this.ddx + friction;
+
+		if (Key.isDown(Key.RIGHT))
+	      	this.ddx = this.ddx + acceleration;
+	    else if (wasright)
+	      	this.ddx = this.ddx - friction;
+
+	  	if (Key.isDown(Key.SPACE) && !this.jumping && !falling) {
+
+			this.ddy = this.ddy - this.jump_height;
+			this.jumping = true;
+			//Game.jumpAudio.play();
+	    }
+
+	    if(Key.isDown(Key.RIGHT) || wasright){
+	    	this.moveRight();
+	    }
+
+	    if(Key.isDown(Key.LEFT) || wasleft){
+	    	this.moveLeft();
+	    }
+
+	    if(Key.isDown(Key.SPACE) && (Key.isDown(Key.LEFT) || wasleft)){
+	    	this.jumpLeft();
+	    }else if(Key.isDown(Key.SPACE) && (Key.isDown(Key.RIGHT) || wasright)){
+	    	this.jumpRight();	
+	    }else if(!Key.isDown(Key.SPACE) && !Key.isDown(Key.LEFT) && !Key.isDown(Key.RIGHT) && !wasright && !wasleft && !this.falling){
+	    	this.stop();
+	    }
+
+	    horizontal_movement = Math.round(dt * this.dx);
+		this.position.x = this.position.x + horizontal_movement;
+
+	    vertical_movement = Math.round(dt * this.dy);
+		this.position.y = this.position.y + vertical_movement;
+
+
+	    this.dx = bound(this.dx + (dt * this.ddx), -this.max_vx, this.max_vx);
+	    this.dy = bound(this.dy + (dt * this.ddy), -this.max_vy, this.max_vy);
+
+	    
+
+	    if ((wasleft  && (this.dx > 0)) ||
+	        (wasright && (this.dx < 0))) {
+	      	this.dx = 0; // clamp at zero to prevent friction from making us jiggle side to side
+	    }
+
+	    if(vertical_movement > 0){
+	    	this.falling = true;
+	    }
+
+	    //this.checkForCollisions(Map.coliders);
+	    // this.checkForPowerUps();
+	    // this.checkForCoins();
+	    // this.checkForEnemies();
+
+	}else{
+		this.dx = 0;
+		this.dy = 0;
+		this.ddx = 0;
+
+		if(timestamp() >= this.time_of_dead+this.respawn_after){
+			this.respawn();
+		}
+	}
 }
 
 Player.prototype.stop = function(){
@@ -218,8 +306,8 @@ Player.prototype.stop = function(){
 Player.prototype.checkForCollisions = function(coliders){
 	player = this;
 	coliders.map(function(object){
-		vX = (player.position.x+8) - (object.x-Camera.offset.x + (object.width / 2));
-		vY = (player.position.y+8) - (object.y-Camera.offset.y + (object.height / 2));
+		vX = (player.position.x+8) - (object.x+ (object.width / 2));
+		vY = (player.position.y+8) - (object.y+ (object.height / 2));
 
 		hWidths = 8 + (object.width / 2);
 		hHeights = 8 + (object.height / 2);
@@ -284,7 +372,7 @@ KeyboardEvents.prototype.onKeyup =  function(event) {
 
 // Map prototype
 
-function MapGenerator(json_map, tiles_sprite, screen){
+function MapGenerator(json_map, tiles_sprite, screen, viewport){
 	this.json_map = json_map;
 	this.tiles_sprite = tiles_sprite;
 	this.tiles = [];
@@ -294,6 +382,7 @@ function MapGenerator(json_map, tiles_sprite, screen){
 	this.enemies = [];
 	this.princess = [];
 	this.screen = screen;
+	this.viewport = viewport;
 }
 
 MapGenerator.prototype.generateTiles = function(){
@@ -309,14 +398,14 @@ MapGenerator.prototype.generateTiles = function(){
 	}
 }
 
-MapGenerator.prototype.drawTile = function(x, y, tile_index, offset_x, offset_y){
+MapGenerator.prototype.drawTile = function(x, y, tile_index){
 	this.screen.context.drawImage(	this.tiles[tile_index], 
 									0, 
 									0,
 									this.json_map.tilewidth, 
 									this.json_map.tileheight, 
-									(x*this.json_map.tilewidth)-offset_x, 
-									(y*this.json_map.tileheight)-offset_y, 
+									(x*this.json_map.tilewidth), 
+									(y*this.json_map.tileheight), 
 									this.json_map.tilewidth, 
 									this.json_map.tileheight);
 }
@@ -324,8 +413,8 @@ MapGenerator.prototype.drawTile = function(x, y, tile_index, offset_x, offset_y)
 MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	self = this;
 
-	screenTWidth = (this.screen.canvas.width/32)+4;
-	screenTHeight = (this.screen.canvas.height/32)+4;
+	screenTWidth = (this.viewport.width/32)+4;
+	screenTHeight = (this.viewport.height/32)+4;
 
 	offsetTWidth = Math.abs(Math.floor((2*offset_x)/32));
 	offsetTHeight = Math.abs(Math.floor((2*offset_y)/32));
@@ -345,7 +434,7 @@ MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 
 				if(typeof tile_index == 'undefined') break;
 				
-				if(tile_index != 0) self.drawTile(x+offsetTWidth, y+offsetTHeight, tile_index-self.json_map.tilesets[0].firstgid, offset_x, offset_y);
+				if(tile_index != 0) self.drawTile(x+offsetTWidth, y+offsetTHeight, tile_index-self.json_map.tilesets[0].firstgid);
 				
 				x++;
 				if(x > screenTWidth){
@@ -358,14 +447,14 @@ MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	});			
 }
 
-MapGenerator.prototype.drawCoins = function(sprite, offset_x, offset_y, ticks){
+MapGenerator.prototype.drawCoins = function(sprite, ticks){
 	sprite.sourceY = 16;
 	if(!(ticks%sprite.ticks_per_frame)){
 		sprite.sourceX = sprite.sourceX == 48 ? 0 : sprite.sourceX+16;
 	}
 	this.coins.map(function(coin){
 		if(!coin.deleted){
-			sprite.draw(coin.x-offset_x, (coin.y-coin.height)-offset_y);
+			sprite.draw(coin.x, (coin.y-coin.height));
 		}
 	});
 }
@@ -390,7 +479,7 @@ MapGenerator.prototype.loadObjects = function(){
 		}
 		if(layer.type == 'objectgroup' && layer.name == "Enemies"){
 			layer.objects.map(function(object){
-				self.enemies.push({x: object.x, y: object.y, width: object.width, height: object.height, deleted: false});
+				self.enemies.push(new Enemy({position: new Vector2d(object.x, object.y)}));
 			});
 		}
 	});
@@ -402,7 +491,6 @@ function Platformer(screen){
 	this.callbacks = {init: [], render: [], update: []};
 	this.screen = screen;
 	this.unit = 16;
-	this.gravity =  16 * 9.8 * 6;
 	this.fps = 60;
 	this.step = 1/this.fps;
 	this.now, this.last = timestamp();
@@ -470,3 +558,42 @@ Platformer.prototype.getSprite = function(name){
 	})[0].sprite;
 
 }
+
+Platformer.prototype.checkForCollisions = function(obj, coliders){
+	coliders.map(function(object){
+		vX = (obj.position.x+8) - (object.x + (object.width / 2));
+		vY = (obj.position.y+8) - (object.y + (object.height / 2));
+
+		hWidths = 8 + (object.width / 2);
+		hHeights = 8 + (object.height / 2);
+
+		if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+	        // figures out on which side we are colliding (top, bottom, left, or right)
+	        var oX = hWidths - Math.abs(vX),
+	            oY = hHeights - Math.abs(vY);
+	        if (oX >= oY) {
+	            if (vY > 0) {
+	                obj.position.y += oY;
+	                obj.dy = 0;
+	            } else {
+	                obj.position.y -= oY;
+	                obj.dy = 0;
+	                obj.falling = false;
+	                obj.jumping = false;
+	            }
+	        } else {
+	            if (vX > 0) {
+	                obj.position.x += oX;
+	                obj.dx = 0;
+	            } else {
+	                obj.position.x -= oX;
+	                obj.dx = 0;
+	            }
+	        }
+	        if(object.killing && !obj.dead){
+	        	obj.die();
+	        }
+	    }
+
+	});
+};
