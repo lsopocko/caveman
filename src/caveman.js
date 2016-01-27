@@ -13,6 +13,7 @@ window.onload = function(){
 	var Caveman = new Platformer(Scene);
 	var Keyboard = new KeyboardEvents();
 	var Map = new MapGenerator(json_map, tiles, Scene, Display.canvas);
+	var ObjectsTree = new QuadTree(1, [20, 20]);
 
 	var cPlayer = new Player({	position: new Vector2d(4*16, 4*16),
 								spawn: new Vector2d(4*16, 4*16),
@@ -45,6 +46,8 @@ window.onload = function(){
 
 		Map.drawCoins(	Caveman.getSprite('items'), 
 						Caveman.ticks);
+
+		Map.drawItems();
 
 		cPlayer.draw();
 
@@ -79,7 +82,7 @@ window.onload = function(){
 		}else{
 			Camera.offset.y = 0;
 		}
-		
+
 	})
 
 	tiles.onload = function(){

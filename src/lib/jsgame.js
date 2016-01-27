@@ -20,6 +20,17 @@ function timestamp() {
     return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
 }
 
+// Quad tree
+
+function QuadTree(level, bounds){
+	this.max_objects = 10;
+	this.max_levels = 5;
+
+	this.level = level;
+	this.objects = [];
+	this.bounds = bounds;
+}
+
 // Drawing context
 
 function DrawingContext(canvas_tag_id){
@@ -370,6 +381,18 @@ KeyboardEvents.prototype.onKeyup =  function(event) {
 	delete this._pressed[event.keyCode];
 }
 
+// UI prototype
+
+function UI(sprite){
+	this.sprite = sprite;
+}
+
+UI.prototype.draw = function(){}
+UI.prototype.update = function(){}
+UI.prototype.removeLife = function(){}
+UI.prototype.addLife = function(){}
+
+
 // Map prototype
 
 function MapGenerator(json_map, tiles_sprite, screen, viewport){
@@ -455,6 +478,36 @@ MapGenerator.prototype.drawCoins = function(sprite, ticks){
 	this.coins.map(function(coin){
 		if(!coin.deleted){
 			sprite.draw(coin.x, (coin.y-coin.height));
+		}
+	});
+}
+
+MapGenerator.prototype.drawAnimatedObjects = function(sprite, ticks){
+	sprite.sourceY = 16;
+	if(!(ticks%sprite.ticks_per_frame)){
+		sprite.sourceX = sprite.sourceX == 48 ? 0 : sprite.sourceX+16;
+	}
+	this.coins.map(function(coin){
+		if(!coin.deleted){
+			sprite.draw(coin.x, (coin.y-coin.height));
+		}
+	});
+}
+
+MapGenerator.prototype.drawItems = function(){
+	that = this;
+	this.items.map(function(item){
+		if(item.tile != 0 && !item.deleted){
+			that.drawTile((item.x)/that.json_map.tilewidth, (item.y-item.height)/that.json_map.tileheight, item.tile-that.json_map.tilesets[0].firstgid);
+		}
+	});
+}
+
+MapGenerator.prototype.drawStaticObjects = function(){
+	that = this;
+	this.static_objects.map(function(obj){
+		if(obj.tile != 0 && !obj.deleted){
+			that.drawTile((obj.x)/that.json_map.tilewidth, (obj.y-obj.height)/that.json_map.tileheight, obj.tile-that.json_map.tilesets[0].firstgid);
 		}
 	});
 }

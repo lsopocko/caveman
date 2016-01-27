@@ -611,10 +611,115 @@ json_map = { "height":64,
                  "width":800,
                  "x":224,
                  "y":96
+                }, 
+                {
+                 "height":96,
+                 "id":117,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":0,
+                 "y":0
+                }, 
+                {
+                 "height":160,
+                 "id":118,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":0,
+                 "y":128
+                }, 
+                {
+                 "height":80,
+                 "id":119,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":0,
+                 "y":320
+                }, 
+                {
+                 "height":592,
+                 "id":120,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":0,
+                 "y":416
+                }, 
+                {
+                 "height":96,
+                 "id":123,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":1008,
+                 "y":0
+                }, 
+                {
+                 "height":224,
+                 "id":124,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":1008,
+                 "y":112
+                }, 
+                {
+                 "height":656,
+                 "id":125,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":1008,
+                 "y":352
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":false,
+         "visible":true,
          "width":0,
          "x":0,
          "y":0
@@ -903,7 +1008,7 @@ json_map = { "height":64,
          "x":0,
          "y":0
         }],
- "nextobjectid":117,
+ "nextobjectid":126,
  "orientation":"orthogonal",
  "properties":
     {
@@ -915,7 +1020,7 @@ json_map = { "height":64,
         {
          "columns":8,
          "firstgid":1,
-         "image":"img\/tiles.png",
+         "image":"..\/sandbox\/img\/tiles.png",
          "imageheight":176,
          "imagewidth":128,
          "margin":0,
