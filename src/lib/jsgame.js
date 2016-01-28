@@ -383,12 +383,19 @@ KeyboardEvents.prototype.onKeyup =  function(event) {
 
 // UI prototype
 
-function UI(sprite){
+function UI(sprite, position){
 	this.sprite = sprite;
+	this.position = position;
+	this.life = 0;
 }
 
-UI.prototype.draw = function(){}
-UI.prototype.update = function(){}
+UI.prototype.draw = function(){
+	this.sprite.sourceY = 7*(this.life-1);
+	this.sprite.draw(this.position.x, this.position.y);
+}
+UI.prototype.update = function(player){
+	this.life = player.life;
+}
 UI.prototype.removeLife = function(){}
 UI.prototype.addLife = function(){}
 
@@ -470,73 +477,27 @@ MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	});			
 }
 
-MapGenerator.prototype.drawCoins = function(sprite, ticks){
-	sprite.sourceY = 16;
-	if(!(ticks%sprite.ticks_per_frame)){
-		sprite.sourceX = sprite.sourceX == 48 ? 0 : sprite.sourceX+16;
-	}
-	this.coins.map(function(coin){
-		if(!coin.deleted){
-			sprite.draw(coin.x, (coin.y-coin.height));
-		}
-	});
-}
 
-MapGenerator.prototype.drawAnimatedObjects = function(sprite, ticks){
-	sprite.sourceY = 16;
-	if(!(ticks%sprite.ticks_per_frame)){
-		sprite.sourceX = sprite.sourceX == 48 ? 0 : sprite.sourceX+16;
-	}
-	this.coins.map(function(coin){
-		if(!coin.deleted){
-			sprite.draw(coin.x, (coin.y-coin.height));
-		}
-	});
-}
-
-MapGenerator.prototype.drawItems = function(){
+MapGenerator.prototype.drawObjects = function(ticks){
 	that = this;
-	this.items.map(function(item){
-		if(item.tile != 0 && !item.deleted){
-			that.drawTile((item.x)/that.json_map.tilewidth, (item.y-item.height)/that.json_map.tileheight, item.tile-that.json_map.tilesets[0].firstgid);
+	this.json_map.layers[2].objects.map(function(object, i){
+		if(object.gid && object.visible){
+			if(object.properties.animated == '1'){
+				if(typeof that.json_map.layers[2].objects[i].current_frame == 'undefined'){
+					that.json_map.layers[2].objects[i].current_frame = 1;
+				}else if(that.json_map.layers[2].objects[i].current_frame >= object.properties.frames*1){
+					that.json_map.layers[2].objects[i].current_frame = 1;
+				}
+				that.drawTile((object.x)/that.json_map.tilewidth, (object.y-object.height)/that.json_map.tileheight, (object.gid+that.json_map.layers[2].objects[i].current_frame)-that.json_map.tilesets[0].firstgid);
+				if(!(ticks%object.properties.ticks_per_frame)) that.json_map.layers[2].objects[i].current_frame++;
+				
+			}else{
+				that.drawTile((object.x)/that.json_map.tilewidth, (object.y-object.height)/that.json_map.tileheight, object.gid-that.json_map.tilesets[0].firstgid);
+			}
 		}
 	});
 }
 
-MapGenerator.prototype.drawStaticObjects = function(){
-	that = this;
-	this.static_objects.map(function(obj){
-		if(obj.tile != 0 && !obj.deleted){
-			that.drawTile((obj.x)/that.json_map.tilewidth, (obj.y-obj.height)/that.json_map.tileheight, obj.tile-that.json_map.tilesets[0].firstgid);
-		}
-	});
-}
-
-MapGenerator.prototype.loadObjects = function(){
-	self = this;		
-	this.json_map.layers.map(function(layer){
-		if(layer.type == 'objectgroup' && layer.name == "Coliders"){
-			layer.objects.map(function(object){
-				self.coliders.push({x: object.x, y: object.y, tile: 256, killing: object.type == 'killing' ? true : false, width: object.width, height: object.height});
-			});
-		}
-		if(layer.type == 'objectgroup' && layer.name == "Items"){
-			layer.objects.map(function(object){
-				self.items.push({x: object.x, y: object.y, tile: object.gid, type: object.type, width: object.width, height: object.height, deleted: false});
-			});
-		}
-		if(layer.type == 'objectgroup' && layer.name == "Coins"){
-			layer.objects.map(function(object){
-				self.coins.push({x: object.x, y: object.y, width: object.width, height: object.height, deleted: false});
-			});
-		}
-		if(layer.type == 'objectgroup' && layer.name == "Enemies"){
-			layer.objects.map(function(object){
-				self.enemies.push(new Enemy({position: new Vector2d(object.x, object.y)}));
-			});
-		}
-	});
-}
 
 // Platformer prototype
 
@@ -612,41 +573,35 @@ Platformer.prototype.getSprite = function(name){
 
 }
 
-Platformer.prototype.checkForCollisions = function(obj, coliders){
-	coliders.map(function(object){
-		vX = (obj.position.x+8) - (object.x + (object.width / 2));
-		vY = (obj.position.y+8) - (object.y + (object.height / 2));
+Platformer.prototype.checkForCollision = function(obj_1, obj_2){
 
-		hWidths = 8 + (object.width / 2);
-		hHeights = 8 + (object.height / 2);
+	vX = (obj_1.position.x+8) - (obj_2.x + (obj_2.width / 2));
+	vY = (obj_1.position.y+8) - (obj_2.y + (obj_2.height / 2));
 
-		if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
-	        // figures out on which side we are colliding (top, bottom, left, or right)
-	        var oX = hWidths - Math.abs(vX),
-	            oY = hHeights - Math.abs(vY);
-	        if (oX >= oY) {
-	            if (vY > 0) {
-	                obj.position.y += oY;
-	                obj.dy = 0;
-	            } else {
-	                obj.position.y -= oY;
-	                obj.dy = 0;
-	                obj.falling = false;
-	                obj.jumping = false;
-	            }
-	        } else {
-	            if (vX > 0) {
-	                obj.position.x += oX;
-	                obj.dx = 0;
-	            } else {
-	                obj.position.x -= oX;
-	                obj.dx = 0;
-	            }
-	        }
-	        if(object.killing && !obj.dead){
-	        	obj.die();
-	        }
-	    }
+	hWidths = 8 + (obj_2.width / 2);
+	hHeights = 8 + (obj_2.height / 2);
 
-	});
+	collision = false;
+
+	if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+        // figures out on which side we are colliding (top, bottom, left, or right)
+        var oX = hWidths - Math.abs(vX),
+            oY = hHeights - Math.abs(vY);
+        if (oX >= oY) {
+            if (vY > 0) {
+                collision = {site: 'top', offset_top:oY, offset_left:0, offset_right:0, offset_bottom:0, object:obj_2}
+            } else {
+                collision = {site: 'bottom', offset_top:0, offset_left:0, offset_right:0, offset_bottom:oY, object:obj_2}
+            }
+        } else {
+            if (vX > 0) {
+                collision = {site: 'left', offset_top:0, offset_left:oX, offset_right:0, offset_bottom:0, object:obj_2}
+            } else {
+                collision = {site: 'right', offset_top:0, offset_left:0, offset_right:oX, offset_bottom:0, object:obj_2}
+            }
+        }
+    }
+
+    return collision;
+
 };

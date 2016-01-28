@@ -1012,7 +1012,7 @@ json_map = { "height":64,
  "orientation":"orthogonal",
  "properties":
     {
-
+     "obj_layer_index":"2"
     },
  "renderorder":"right-down",
  "tileheight":16,
