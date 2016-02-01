@@ -28,7 +28,7 @@ window.onload = function(){
 		Caveman.addSprite('items', new Sprite('/assets/sprites/items.png', Scene, 16, 16, 5));
 		Map.generateTiles();
 		//Map.loadObjects();
-		Scene.resize(Map.json_map.width*Map.json_map.tilewidth, Map.json_map.height*Map.json_map.tilewidth);
+		Scene.resize((Map.json_map.width*Map.json_map.tilewidth), (Map.json_map.height*Map.json_map.tilewidth));
 	})
 
 	Caveman.onRender(function(){
@@ -95,9 +95,13 @@ window.onload = function(){
 				}
 			}
 		})
-
+		//console.log(Scene.canvas.width)
 		if(cPlayer.position.x > 224){
-			Camera.offset.x = -(cPlayer.position.x-224);
+			
+			if(Math.abs(Camera.offset.x*2)+32 < (((Map.json_map.width*Map.json_map.tilewidth)*2) - Display.canvas.width)){
+				Camera.offset.x = -(cPlayer.position.x-224);
+			}
+			
 			UserInterface.position.x = Math.abs(Camera.offset.x)+20;
 		}else{
 			Camera.offset.x = 0;
@@ -105,7 +109,10 @@ window.onload = function(){
 		}
 
 		if(cPlayer.position.y > 224){
-			Camera.offset.y = -(cPlayer.position.y-224);
+			console.log((((Map.json_map.height*Map.json_map.tileheight)*2) - Display.canvas.height))
+			if(Math.abs(Camera.offset.y*2)+32 < (((Map.json_map.height*Map.json_map.tileheight)*2) - Display.canvas.height)){
+				Camera.offset.y = -(cPlayer.position.y-224);
+			}
 			UserInterface.position.y = Math.abs(Camera.offset.y)+20;
 		}else{
 			Camera.offset.y = 0;
