@@ -140,7 +140,7 @@ function Character(params){
 	this.life = params.hasOwnProperty('life') ? params.life : 6;
 	this.spawn = params.hasOwnProperty('spawn') ? params.spawn : {x:0, y:0};
 	this.dead = false;
-	this.respawn_after = params.hasOwnProperty('respawn_after') ? params.respawn_after : 5*1000;
+	this.respawn_after = params.hasOwnProperty('respawn_after') ? params.respawn_after : 1*1000;
 	this.time_of_dead = null;
 	this.gravity = 16 * 9.8 * 6;
 
@@ -168,6 +168,7 @@ Character.prototype.stop = function(){}
 function Enemy(params){
 	Character.call(this, params);
 	this.direction = params.direction;
+	this.id = params.id;
 }
 
 Enemy.prototype = Object.create(Character.prototype);
@@ -526,6 +527,7 @@ function Platformer(screen){
 	this.ticks = 0;
 	this.dt = 0;
 	this.sprites = [];
+	this.enemies = [];
 }
 
 Platformer.prototype.onInit = function (callback){ 

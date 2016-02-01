@@ -16,22 +16,28 @@ window.onload = function(){
 	var ObjectsTree = new QuadTree(1, [20, 20]);
 	var UserInterface = new UI(new Sprite('/assets/sprites/ui.png', Scene, 28, 7), new Vector2d(20, 20));
 
-	var cPlayer = new Player({	position: new Vector2d(2*16, 1*16),
-								spawn: new Vector2d(2*16, 1*16),
+	var cPlayer = new Player({	position: new Vector2d(2*16, -16),
+								spawn: new Vector2d(2*16, -16),
 								sprite: new Sprite('/assets/sprites/player.png', Scene, 16, 16, 3)});
-
-	var oEnemy = new Enemy({	position: new Vector2d(9*16, 4*16),
-								direction: 'right',
-								spawn: new Vector2d(5*16, 1*16),
-								max_vx: 5*6.5,
-								sprite: new Sprite('/assets/sprites/enemies.png', Scene, 16, 16, 5)});
 
 	Caveman.onInit(function(){
 		window.addEventListener('keyup', function(event) { Keyboard.onKeyup(event); }, false);
 		window.addEventListener('keydown', function(event) { Keyboard.onKeydown(event); }, false);
 		Caveman.addSprite('items', new Sprite('/assets/sprites/items.png', Scene, 16, 16, 5));
 		Map.generateTiles();
-		//Map.loadObjects();
+		Map.json_map.layers[2].objects.map(function(object, i){
+
+			if(object.type == 'enemy'){
+				console.log(i);
+				Caveman.enemies.push(new Enemy({	position: new Vector2d(object.x, object.y),
+													direction: 'right',
+													spawn: new Vector2d(object.x, object.y),
+													max_vx: 5*6.5,
+													sprite: new Sprite('/assets/sprites/enemies.png', Scene, 16, 16, 5),
+													id: i}));
+			}
+		});
+
 		Scene.resize((Map.json_map.width*Map.json_map.tilewidth), (Map.json_map.height*Map.json_map.tilewidth));
 	})
 
@@ -51,7 +57,9 @@ window.onload = function(){
 
 		Map.drawObjects(Caveman.ticks);
 
-		oEnemy.draw();
+		Caveman.enemies.map(function(enemy){
+			enemy.draw()
+		})
 
 		cPlayer.draw();
 
@@ -70,7 +78,14 @@ window.onload = function(){
 
 	Caveman.onUpdate(function(dt){
 		cPlayer.update(dt, Keyboard);
-		oEnemy.update(dt);
+
+		Caveman.enemies.map(function(enemy){
+			enemy.update(dt);
+			Map.json_map.layers[2].objects[enemy.id].x = enemy.position.x;
+			Map.json_map.layers[2].objects[enemy.id].y = enemy.position.y;
+		})
+
+
 		UserInterface.update(cPlayer);
 
 
@@ -97,32 +112,34 @@ window.onload = function(){
 				}else if(obj.type == 'item'){
 					delete Map.json_map.layers[2].objects[i];
 				}
-				else if(obj.type == 'killing'){
-					cPlayer.life--;
+				else if((obj.type == 'killing' || obj.type == 'enemy') && !cPlayer.dead){
+					cPlayer.die();
 				}
 			}
-
-			if(collision = Caveman.checkForCollision(oEnemy, obj)){
-				if(obj.type == 'platform' || obj.type == 'waypoint'){
-					if(collision.site == 'top'){
-						oEnemy.position.y += collision.offset_top;
-						oEnemy.dy = 0;
-					}else if(collision.site == 'bottom'){
-						oEnemy.position.y -= collision.offset_bottom;
-		                oEnemy.dy = 0;
-		                oEnemy.falling = false;
-		                oEnemy.jumping = false;
-					}else if(collision.site == 'left'){
-						oEnemy.position.x += collision.offset_left;
-		                oEnemy.dx = 0;
-		                oEnemy.direction = 'right';
-					}else if(collision.site == 'right'){
-						oEnemy.position.x -= collision.offset_right;
-		                oEnemy.dx = 0;
-		                oEnemy.direction = 'left';
+			Caveman.enemies.map(function(enemy){
+				if(collision = Caveman.checkForCollision(enemy, obj)){
+					if(obj.type == 'platform' || obj.type == 'waypoint'){
+						if(collision.site == 'top'){
+							enemy.position.y += collision.offset_top;
+							enemy.dy = 0;
+						}else if(collision.site == 'bottom'){
+							enemy.position.y -= collision.offset_bottom;
+			                enemy.dy = 0;
+			                enemy.falling = false;
+			                enemy.jumping = false;
+						}else if(collision.site == 'left'){
+							enemy.position.x += collision.offset_left;
+			                enemy.dx = 0;
+			                enemy.direction = 'right';
+						}else if(collision.site == 'right'){
+							enemy.position.x -= collision.offset_right;
+			                enemy.dx = 0;
+			                enemy.direction = 'left';
+						}
 					}
 				}
-			}
+			})
+			
 		})
 		//console.log(Scene.canvas.width)
 		if(cPlayer.position.x > 224){
@@ -138,7 +155,6 @@ window.onload = function(){
 		}
 
 		if(cPlayer.position.y > 224){
-			console.log((((Map.json_map.height*Map.json_map.tileheight)*2) - Display.canvas.height))
 			if(Math.abs(Camera.offset.y*2)+32 < (((Map.json_map.height*Map.json_map.tileheight)*2) - Display.canvas.height)){
 				Camera.offset.y = -(cPlayer.position.y-224);
 			}

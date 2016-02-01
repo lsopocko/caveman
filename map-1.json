@@ -367,6 +367,66 @@ json_map = { "height":32,
                  "width":16,
                  "x":304,
                  "y":112
+                }, 
+                {
+                 "height":16,
+                 "id":41,
+                 "name":"Enemy",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"enemy",
+                 "visible":true,
+                 "width":16,
+                 "x":176,
+                 "y":112
+                }, 
+                {
+                 "height":16,
+                 "id":43,
+                 "name":"Enemy",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"enemy",
+                 "visible":true,
+                 "width":16,
+                 "x":528,
+                 "y":64
+                }, 
+                {
+                 "height":16,
+                 "id":44,
+                 "name":"Waypoint",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"waypoint",
+                 "visible":true,
+                 "width":16,
+                 "x":432,
+                 "y":64
+                }, 
+                {
+                 "height":16,
+                 "id":45,
+                 "name":"Waypoint",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"waypoint",
+                 "visible":true,
+                 "width":16,
+                 "x":704,
+                 "y":64
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -375,7 +435,7 @@ json_map = { "height":32,
          "x":0,
          "y":0
         }],
- "nextobjectid":41,
+ "nextobjectid":46,
  "orientation":"orthogonal",
  "properties":
     {
