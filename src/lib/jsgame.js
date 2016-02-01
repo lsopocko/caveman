@@ -167,13 +167,67 @@ Character.prototype.stop = function(){}
 
 function Enemy(params){
 	Character.call(this, params);
+	this.direction = params.direction;
 }
 
 Enemy.prototype = Object.create(Character.prototype);
 Enemy.prototype.constructor = Enemy;
 Enemy.prototype.update = function(dt){
-	
+	var wasleft = this.dx < 0,
+		wasright = this.dx > 0,
+		acceleration = this.acceleration;
+
+	this.ddx = 0;
+	this.ddy = this.gravity;
+
+	if (this.direction == 'left')
+      	this.ddx = this.ddx - acceleration;
+
+	if (this.direction == 'right')
+      	this.ddx = this.ddx + acceleration;
+
+    if(this.direction == 'right'){
+    	this.moveRight();
+    }
+
+    if(this.direction == 'left'){
+    	this.moveLeft();
+    }
+
+
+    horizontal_movement = Math.round(dt * this.dx);
+	this.position.x = this.position.x + horizontal_movement;
+
+    vertical_movement = Math.round(dt * this.dy);
+	this.position.y = this.position.y + vertical_movement;
+
+    this.dx = bound(this.dx + (dt * this.ddx), -this.max_vx, this.max_vx);
+    this.dy = bound(this.dy + (dt * this.ddy), -this.max_vy, this.max_vy);
+
+    if(vertical_movement > 0){
+    	this.falling = true;
+    }
+
 }
+
+Enemy.prototype.moveRight = function(){
+
+	this.sprite.sourceY = 0;
+	if(this.ticks > this.sprite.ticks_per_frame){
+		this.ticks = 0;
+		this.sprite.sourceX = this.sprite.sourceX == 32 ? 0 : this.sprite.sourceX+16;
+	}
+}
+
+Enemy.prototype.moveLeft = function(){
+
+	this.sprite.sourceY = 48;
+	if(this.ticks > this.sprite.ticks_per_frame){
+		this.ticks = 0;
+		this.sprite.sourceX = this.sprite.sourceX == 32 ? 0 : this.sprite.sourceX+16;
+	}
+}
+
 
 // Player Character prototype
 
@@ -187,7 +241,7 @@ Player.prototype.constructor = Player;
 Player.prototype.moveRight = function(){
 
 	this.sprite.sourceY = 0;
-	if(this.ticks > this.ticks_per_frame){
+	if(this.ticks > this.sprite.ticks_per_frame){
 		this.ticks = 0;
 		this.sprite.sourceX = this.sprite.sourceX == 32 ? 0 : this.sprite.sourceX+16;
 	}
@@ -196,7 +250,7 @@ Player.prototype.moveRight = function(){
 Player.prototype.moveLeft = function(){
 
 	this.sprite.sourceY = 32;
-	if(this.ticks > this.ticks_per_frame){
+	if(this.ticks > this.sprite.ticks_per_frame){
 		this.ticks = 0;
 		this.sprite.sourceX = this.sprite.sourceX == 32 ? 0 : this.sprite.sourceX+16;
 	}
@@ -314,45 +368,6 @@ Player.prototype.stop = function(){
 	this.sprite.sourceX = 16;
 }
 
-Player.prototype.checkForCollisions = function(coliders){
-	player = this;
-	coliders.map(function(object){
-		vX = (player.position.x+8) - (object.x+ (object.width / 2));
-		vY = (player.position.y+8) - (object.y+ (object.height / 2));
-
-		hWidths = 8 + (object.width / 2);
-		hHeights = 8 + (object.height / 2);
-
-		if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
-	        // figures out on which side we are colliding (top, bottom, left, or right)
-	        var oX = hWidths - Math.abs(vX),
-	            oY = hHeights - Math.abs(vY);
-	        if (oX >= oY) {
-	            if (vY > 0) {
-	                player.position.y += oY;
-	                player.dy = 0;
-	            } else {
-	                player.position.y -= oY;
-	                player.dy = 0;
-	                player.falling = false;
-	                player.jumping = false;
-	            }
-	        } else {
-	            if (vX > 0) {
-	                player.position.x += oX;
-	                player.dx = 0;
-	            } else {
-	                player.position.x -= oX;
-	                player.dx = 0;
-	            }
-	        }
-	        if(object.killing && !player.dead){
-	        	player.die();
-	        }
-	    }
-
-	});
-};
 
 // Keyboard prototype
 

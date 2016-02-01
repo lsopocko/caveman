@@ -337,6 +337,36 @@ json_map = { "height":32,
                  "width":48,
                  "x":944,
                  "y":80
+                }, 
+                {
+                 "height":16,
+                 "id":39,
+                 "name":"Waypoint",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"waypoint",
+                 "visible":true,
+                 "width":16,
+                 "x":128,
+                 "y":112
+                }, 
+                {
+                 "height":16,
+                 "id":40,
+                 "name":"Waypoint",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"waypoint",
+                 "visible":true,
+                 "width":16,
+                 "x":304,
+                 "y":112
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -345,7 +375,7 @@ json_map = { "height":32,
          "x":0,
          "y":0
         }],
- "nextobjectid":39,
+ "nextobjectid":41,
  "orientation":"orthogonal",
  "properties":
     {

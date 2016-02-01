@@ -18,9 +18,13 @@ window.onload = function(){
 
 	var cPlayer = new Player({	position: new Vector2d(2*16, 1*16),
 								spawn: new Vector2d(2*16, 1*16),
-								sprite: new Sprite('/assets/sprites/player.png', Scene, 16, 16, 3),
-								camera: Camera,
-								screen: Scene});
+								sprite: new Sprite('/assets/sprites/player.png', Scene, 16, 16, 3)});
+
+	var oEnemy = new Enemy({	position: new Vector2d(9*16, 4*16),
+								direction: 'right',
+								spawn: new Vector2d(5*16, 1*16),
+								max_vx: 5*6.5,
+								sprite: new Sprite('/assets/sprites/enemies.png', Scene, 16, 16, 5)});
 
 	Caveman.onInit(function(){
 		window.addEventListener('keyup', function(event) { Keyboard.onKeyup(event); }, false);
@@ -47,6 +51,8 @@ window.onload = function(){
 
 		Map.drawObjects(Caveman.ticks);
 
+		oEnemy.draw();
+
 		cPlayer.draw();
 
 		UserInterface.draw();
@@ -64,6 +70,7 @@ window.onload = function(){
 
 	Caveman.onUpdate(function(dt){
 		cPlayer.update(dt, Keyboard);
+		oEnemy.update(dt);
 		UserInterface.update(cPlayer);
 
 
@@ -92,6 +99,28 @@ window.onload = function(){
 				}
 				else if(obj.type == 'killing'){
 					cPlayer.life--;
+				}
+			}
+
+			if(collision = Caveman.checkForCollision(oEnemy, obj)){
+				if(obj.type == 'platform' || obj.type == 'waypoint'){
+					if(collision.site == 'top'){
+						oEnemy.position.y += collision.offset_top;
+						oEnemy.dy = 0;
+					}else if(collision.site == 'bottom'){
+						oEnemy.position.y -= collision.offset_bottom;
+		                oEnemy.dy = 0;
+		                oEnemy.falling = false;
+		                oEnemy.jumping = false;
+					}else if(collision.site == 'left'){
+						oEnemy.position.x += collision.offset_left;
+		                oEnemy.dx = 0;
+		                oEnemy.direction = 'right';
+					}else if(collision.site == 'right'){
+						oEnemy.position.x -= collision.offset_right;
+		                oEnemy.dx = 0;
+		                oEnemy.direction = 'left';
+					}
 				}
 			}
 		})
