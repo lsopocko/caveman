@@ -13,7 +13,7 @@ window.onload = function(){
 	var Caveman = new Platformer(Scene);
 	var Keyboard = new KeyboardEvents();
 	var Map = new MapGenerator(json_map, tiles, Scene, Display.canvas);
-	var ObjectsTree = new QuadTree(1, [20, 20]);
+	var Objects = new QuadTree();
 	var UserInterface = new UI(new Sprite('/assets/sprites/ui.png', Scene, 28, 7), new Vector2d(20, 20));
 
 	var cPlayer = new Player({	position: new Vector2d(2*16, -16),
@@ -28,7 +28,6 @@ window.onload = function(){
 		Map.json_map.layers[2].objects.map(function(object, i){
 
 			if(object.type == 'enemy'){
-				console.log(i);
 				Caveman.enemies.push(new Enemy({	position: new Vector2d(object.x, object.y),
 													direction: 'right',
 													spawn: new Vector2d(object.x, object.y),
@@ -77,10 +76,12 @@ window.onload = function(){
 	})
 
 	Caveman.onUpdate(function(dt){
+		Objects.clear();
 		cPlayer.update(dt, Keyboard);
 
 		Caveman.enemies.map(function(enemy){
 			enemy.update(dt);
+			// This i cousing problems with disapereng enemis
 			Map.json_map.layers[2].objects[enemy.id].x = enemy.position.x;
 			Map.json_map.layers[2].objects[enemy.id].y = enemy.position.y;
 		})
@@ -88,8 +89,16 @@ window.onload = function(){
 
 		UserInterface.update(cPlayer);
 
-
 		Map.json_map.layers[2].objects.map(function(obj, i){
+			Objects.add(obj);
+		})
+
+		//console.log(Objects.retrive({}));
+		//console.log(cPlayer.dx)
+
+		//console.log(Objects.retrive({}).length)
+
+		Objects.retrive(cPlayer).map(function(obj, i){
 			if(collision = Caveman.checkForCollision(cPlayer, obj)){
 				if(obj.type == 'platform'){
 					if(collision.site == 'top'){
@@ -108,15 +117,20 @@ window.onload = function(){
 		                cPlayer.dx = 0;
 					}
 				}else if(obj.type == 'coin'){
-					delete Map.json_map.layers[2].objects[i];
+					console.log(obj.id)
+					Map.deleteObject(obj.id);
+					Objects.remove(i);
 				}else if(obj.type == 'item'){
-					delete Map.json_map.layers[2].objects[i];
+					//delete Map.json_map.layers[2].objects[i];
 				}
 				else if((obj.type == 'killing' || obj.type == 'enemy') && !cPlayer.dead){
 					cPlayer.die();
 				}
 			}
-			Caveman.enemies.map(function(enemy){
+		})
+
+		Caveman.enemies.map(function(enemy){
+			Objects.retrive(enemy).map(function(obj, i){
 				if(collision = Caveman.checkForCollision(enemy, obj)){
 					if(obj.type == 'platform' || obj.type == 'waypoint'){
 						if(collision.site == 'top'){
@@ -138,13 +152,14 @@ window.onload = function(){
 						}
 					}
 				}
-			})
-			
+			});
 		})
-		//console.log(Scene.canvas.width)
+		
 		if(cPlayer.position.x > 224){
 			
-			if(Math.abs(Camera.offset.x*2)+32 < (((Map.json_map.width*Map.json_map.tilewidth)*2) - Display.canvas.width)){
+			if(cPlayer.dx > 0 && (Math.abs(Camera.offset.x*2)+32 < (((Map.json_map.width*Map.json_map.tilewidth)*2) - Display.canvas.width))){
+				Camera.offset.x = -(cPlayer.position.x-224);
+			}else if(cPlayer.dx < 0 && (Math.abs(Camera.offset.x) >= (cPlayer.position.x-224))){
 				Camera.offset.x = -(cPlayer.position.x-224);
 			}
 			
@@ -164,6 +179,10 @@ window.onload = function(){
 			UserInterface.position.y = 20;
 		}
 
+		if(!cPlayer.dead && (cPlayer.position.x > (Map.json_map.width*Map.json_map.tilewidth)*2 || cPlayer.position.y > (Map.json_map.height*Map.json_map.tileheight)*2)){
+			cPlayer.die();
+		}
+		
 	})
 
 	tiles.onload = function(){

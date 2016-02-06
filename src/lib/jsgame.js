@@ -22,13 +22,21 @@ function timestamp() {
 
 // Quad tree
 
-function QuadTree(level, bounds){
-	this.max_objects = 10;
-	this.max_levels = 5;
+function QuadTree(){
+	this.objects = [];	
+}
 
-	this.level = level;
+QuadTree.prototype.add = function(object){
+	this.objects.push(object);
+}
+QuadTree.prototype.remove = function(id){
+	delete this.objects[id];
+}
+QuadTree.prototype.retrive = function(object){
+	return this.objects;
+}
+QuadTree.prototype.clear = function(){
 	this.objects = [];
-	this.bounds = bounds;
 }
 
 // Drawing context
@@ -42,7 +50,7 @@ function DrawingContext(canvas_tag_id){
 		this.canvas = document.getElementById(canvas_tag_id);
 		this.context = this.canvas.getContext('2d');
 
-		this.resize((Math.floor(w/32))*20, (Math.floor(h/32))*20);
+		this.resize((Math.floor(w/32))*32, (Math.floor(h/32)+1)*32);
 		this.context.imageSmoothingEnabled = false;
 		this.context.scale(2,2);
 		this.center();	
@@ -493,6 +501,11 @@ MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	});			
 }
 
+MapGenerator.prototype.deleteObject = function(id){
+	this.json_map.layers[2].objects = this.json_map.layers[2].objects.filter(function(e){
+		return e.id !== id;
+	});
+}
 
 MapGenerator.prototype.drawObjects = function(ticks){
 	that = this;
