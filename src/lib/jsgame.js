@@ -111,6 +111,8 @@ function Sprite(filename, screen, width, hegiht, ticks_per_frame){
 	this.pattern = null;
 	this.ticks_per_frame = ticks_per_frame;
 	this.screen = screen;
+	this.render_map = [];
+	this.current_frame = null;
 
 	if(filename != undefined && filename != "" && filename != null){
 		this.image = new Image();
@@ -120,10 +122,37 @@ function Sprite(filename, screen, width, hegiht, ticks_per_frame){
 	}
 }
 
+Sprite.prototype.getCurrentFrame = function(){
+	return this.current_frame;
+}
+
+Sprite.prototype.updateCurrentFrame = function(){
+	canvas = document.createElement('canvas');
+	canvas.width = this.width;
+	canvas.height = this.height;
+	context = canvas.getContext('2d');
+	context.drawImage(this.image, this.sourceX, this.sourceY, this.width, this.height, 0, 0, this.width, this.height);
+	this.current_frame = context;
+}
+
+Sprite.prototype.getRenderMap = function(frame){
+	this.render_map = [];
+	for (var y = 0; y < this.height; y++) {
+		for (var x = 0; x < this.width; x++) {
+			pixel = frame.getImageData(x, y, 1, 1);
+			if(pixel.data[3] != 0){
+				this.render_map.push({x:x, y:y});
+			}
+		}
+	}
+	return this.render_map;
+}
+
 Sprite.prototype.draw = function(x, y){
 	if(this.width == null && this.height == null){
 		this.screen.context.drawImage(this.image, x, y);
 	}else{
+		this.updateCurrentFrame();
 		this.screen.context.drawImage(this.image, this.sourceX, this.sourceY, this.width, this.height, x, y, this.width, this.height);
 	}
 }
@@ -634,4 +663,33 @@ Platformer.prototype.checkForCollision = function(obj_1, obj_2){
 
     return collision;
 
-};
+}
+
+Platformer.prototype.checkForCollisionPixelPerfect = function(obj_1, obj_2){
+
+	obj_1_render_map = obj_1.sprite.getRenderMap(obj_1.sprite.getCurrentFrame());
+	obj_2_render_map = obj_2.sprite.getRenderMap(obj_2.sprite.getCurrentFrame());
+
+	for(var s = 0;s< obj_1_render_map.length; s++){
+		obj_1_pixel = obj_1_render_map[s];
+		obj_1_pixel.x += obj_1.position.x;
+		obj_1_pixel.y += obj_1.position.y;
+
+		for(var t = 0;t< obj_2_render_map.length; t++){
+			obj_2_pixel = obj_2_render_map[t];
+			obj_2_pixel.x += obj_2.position.x;
+			obj_2_pixel.y += obj_2.position.y;
+
+			if(obj_1_pixel.x == obj_2_pixel.x && obj_1_pixel.y == obj_2_pixel.y){
+				console.log('colision!');
+			}else{
+				//console.log('no')
+			}
+			
+		}
+
+	}
+
+	//console.log(obj_1_render_map);
+
+}
