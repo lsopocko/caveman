@@ -37,6 +37,8 @@ window.onload = function(){
 			}
 		});
 
+		Map.loadObjects();
+
 		Scene.resize((Map.json_map.width*Map.json_map.tilewidth), (Map.json_map.height*Map.json_map.tilewidth));
 	})
 
@@ -54,7 +56,7 @@ window.onload = function(){
 		Map.drawMap(Camera.offset.x, 
 					Camera.offset.y);
 
-		Map.drawObjects(Caveman.ticks);
+		//Map.drawObjects(Caveman.ticks);
 
 		Caveman.enemies.map(function(enemy){
 			enemy.draw()
@@ -82,62 +84,46 @@ window.onload = function(){
 		Caveman.enemies.map(function(enemy){
 			enemy.update(dt);
 			// This i cousing problems with disapereng enemis
-			Map.json_map.layers[2].objects[enemy.id].x = enemy.position.x;
-			Map.json_map.layers[2].objects[enemy.id].y = enemy.position.y;
+			// Map.json_map.layers[2].objects[enemy.id].x = enemy.position.x;
+			// Map.json_map.layers[2].objects[enemy.id].y = enemy.position.y;
+			Objects.add(enemy);
 		})
 
 
 		UserInterface.update(cPlayer);
 
 		Map.json_map.layers[2].objects.map(function(obj, i){
-			Objects.add(obj);
+			if(obj.type == 'platform' || obj.type == 'waypoint'){
+				Objects.add(obj);
+			}
 		})
-
-		//console.log(Objects.retrive({}));
-		//console.log(cPlayer.dx)
-
-		//console.log(Objects.retrive({}).length)
-
 
 
 		Objects.retrive(cPlayer).map(function(obj, i){
-			if(collision = Caveman.checkForCollision(cPlayer, obj)){
-				if(obj.type == 'platform'){
-					if(collision.site == 'top'){
-						cPlayer.position.y += collision.offset_top;
-						cPlayer.dy = 0;
-					}else if(collision.site == 'bottom'){
-						cPlayer.position.y -= collision.offset_bottom;
-		                cPlayer.dy = 0;
-		                cPlayer.falling = false;
-		                cPlayer.jumping = false;
-					}else if(collision.site == 'left'){
-						cPlayer.position.x += collision.offset_left;
-		                cPlayer.dx = 0;
-					}else if(collision.site == 'right'){
-						cPlayer.position.x -= collision.offset_right;
-		                cPlayer.dx = 0;
-					}
-				}else if(obj.type == 'coin'){
-					
-					//Map.deleteObject(obj.id);
-					//Objects.remove(i);
-				}else if(obj.type == 'item'){
-					//delete Map.json_map.layers[2].objects[i];
+			if(obj.type == 'platform' && (collision = Caveman.checkForCollision(cPlayer, obj))){
+				
+				if(collision.site == 'top'){
+					cPlayer.position.y += collision.offset_top;
+					cPlayer.dy = 0;
+				}else if(collision.site == 'bottom'){
+					cPlayer.position.y -= collision.offset_bottom;
+	                cPlayer.dy = 0;
+	                cPlayer.falling = false;
+	                cPlayer.jumping = false;
+				}else if(collision.site == 'left'){
+					cPlayer.position.x += collision.offset_left;
+	                cPlayer.dx = 0;
+				}else if(collision.site == 'right'){
+					cPlayer.position.x -= collision.offset_right;
+	                cPlayer.dx = 0;
 				}
-				// Fix it, all obiects schuld be in one array with sprites and so
-				else if(obj.type == 'enemy' && Caveman.checkForCollisionPixelPerfect(cPlayer, Caveman.enemies.filter(function(ele){return ele.id == i;})[0]) && !cPlayer.dead){
-					//console.log(Caveman.enemies.filter(function(ele){return ele.id == i;})[0])
-					cPlayer.die();
-				}
-				// else if((obj.type == 'killing' || obj.type == 'enemy') && !cPlayer.dead){
-				// 	cPlayer.die();
-				// }
+	
+			}else if(obj.type == 'enemy' && !cPlayer.dead && Caveman.checkForCollisionPixelPerfect(cPlayer, obj)){
+				cPlayer.die();
 			}
 		})
 
 		Caveman.enemies.map(function(enemy){
-			Caveman.checkForCollisionPixelPerfect(cPlayer, enemy);
 			Objects.retrive(enemy).map(function(obj, i){
 				if(collision = Caveman.checkForCollision(enemy, obj)){
 					if(obj.type == 'platform' || obj.type == 'waypoint'){
@@ -162,6 +148,8 @@ window.onload = function(){
 				}
 			});
 		})
+
+		
 		
 		if(cPlayer.position.x > 224){
 			

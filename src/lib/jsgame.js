@@ -50,7 +50,7 @@ function DrawingContext(canvas_tag_id){
 		this.canvas = document.getElementById(canvas_tag_id);
 		this.context = this.canvas.getContext('2d');
 
-		this.resize((Math.floor(w/32))*32, (Math.floor(h/32)+1)*32);
+		this.resize((Math.floor(w/32))*32, (Math.floor(h/32)+0.5)*32);
 		this.context.imageSmoothingEnabled = false;
 		this.context.scale(2,2);
 		this.center();	
@@ -180,7 +180,6 @@ function Character(params){
 	this.respawn_after = params.hasOwnProperty('respawn_after') ? params.respawn_after : 1*1000;
 	this.time_of_dead = null;
 	this.gravity = 16 * 9.8 * 6;
-
 }
 
 Character.prototype.update = function(dt, events){}
@@ -206,6 +205,7 @@ function Enemy(params){
 	Character.call(this, params);
 	this.direction = params.direction;
 	this.id = params.id;
+	this.type = 'enemy';
 }
 
 Enemy.prototype = Object.create(Character.prototype);
@@ -466,6 +466,7 @@ function MapGenerator(json_map, tiles_sprite, screen, viewport){
 	this.princess = [];
 	this.screen = screen;
 	this.viewport = viewport;
+	this.objects = [];
 }
 
 MapGenerator.prototype.generateTiles = function(){
@@ -492,7 +493,22 @@ MapGenerator.prototype.drawTile = function(x, y, tile_index){
 									this.json_map.tilewidth, 
 									this.json_map.tileheight);
 }
-
+MapGenerator.prototype.loadObjects = function(){
+	self = this;
+	this.json_map.layers[2].objects.map(function(object, i){
+		this.push = {	
+						position: {x: object.x, y:object.y},
+					 	type: object.type,
+					 	//sprite: new Sprite(),
+						animated: object.properties.animated && object.properties.animated == '1'? true : false,
+						ticks_per_frame: object.properties.ticks_per_frame && object.properties.ticks_per_frame !== '0'? object.properties.ticks_per_frame*1 : 0,
+						id: object.id,
+						width: object.width,
+						height: object.height,
+						current_frame: 0
+					}
+	});
+}
 MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	self = this;
 
@@ -670,20 +686,27 @@ Platformer.prototype.checkForCollisionPixelPerfect = function(obj_1, obj_2){
 	obj_1_render_map = obj_1.sprite.getRenderMap(obj_1.sprite.getCurrentFrame());
 	obj_2_render_map = obj_2.sprite.getRenderMap(obj_2.sprite.getCurrentFrame());
 
+	//console.log(obj_1.position.x + ' || ' + obj_2.position.x);
+
 	for(var s = 0;s< obj_1_render_map.length; s++){
 		obj_1_pixel = obj_1_render_map[s];
-		obj_1_pixel.x += obj_1.position.x;
-		obj_1_pixel.y += obj_1.position.y;
+
+		//console.log(obj_1_pixel);
+	
+		obj_1_x = obj_1.position.x+obj_1_pixel.x;
+		obj_1_y = obj_1.position.y+obj_1_pixel.y;
 
 		for(var t = 0;t< obj_2_render_map.length; t++){
 			obj_2_pixel = obj_2_render_map[t];
-			obj_2_pixel.x += obj_2.position.x;
-			obj_2_pixel.y += obj_2.position.y;
+			obj_2_x = obj_2.position.x+obj_2_pixel.x;
+			obj_2_y = obj_2.position.y+obj_2_pixel.y;
 
-			if(obj_1_pixel.x == obj_2_pixel.x && obj_1_pixel.y == obj_2_pixel.y){
-				console.log('colision!');
-			}else{
-				//console.log('no')
+			if(!((( obj_1_y + 1 ) < ( obj_2_y ) ) ||
+					( obj_1_y > ( obj_2_y + 1 ) ) ||
+					( ( obj_1_x + 1 ) < obj_2_x ) ||
+					( obj_1_x > ( obj_2_x + 1 ) )
+				)){
+				return true;
 			}
 			
 		}
