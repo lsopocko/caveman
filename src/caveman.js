@@ -116,23 +116,6 @@ window.onload = function(){
 		Objects.clear();
 		cPlayer.update(dt, Keyboard);
 
-
-		if(cPlayer.shooting && !Caveman.intervals.shooting){
-			Caveman.laserbeams.push(new LaserBeam({	position: new Vector2d(cPlayer.position.x+16, cPlayer.position.y),
-														sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 3),
-														id: i}));
-			Caveman.intervals.shooting = setInterval(function(){
-				Caveman.laserbeams.push(new LaserBeam({	position: new Vector2d(cPlayer.position.x+16, cPlayer.position.y+8),
-														sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 3),
-														id: i}));
-			}, 500)
-		}else if(!cPlayer.shooting && Caveman.intervals.shooting) {
-			console.log('clear interval');
-			clearInterval(Caveman.intervals.shooting);
-			Caveman.intervals.shooting = false;
-		}
-
-
 		Caveman.enemies.map(function(enemy){
 			enemy.update(dt);
 			Objects.add(enemy);
@@ -144,11 +127,6 @@ window.onload = function(){
 
 		Caveman.items.map(function(item){
 			Objects.add(item);
-		})
-
-		Caveman.laserbeams.map(function(l){
-			l.update(dt);
-			Objects.add(l);
 		})
 
 		UserInterface.update(cPlayer);
@@ -186,39 +164,66 @@ window.onload = function(){
 					return elem.id !== obj.id;
 				})
 			}else if(obj.type == 'life' && Caveman.checkForCollisionPixelPerfect(cPlayer, obj)){
-				console.log('life');
 				Caveman.items = Caveman.items.filter(function(elem, i){
 					return elem.id !== obj.id;
 				})
+			}else if(obj.type == 'pistol' && Caveman.checkForCollisionPixelPerfect(cPlayer, obj)){
+				Caveman.items = Caveman.items.filter(function(elem, i){
+					return elem.id !== obj.id;
+				})
+				cPlayer.has_pistol = true;
 			}
+		})
+
+		if(cPlayer.shooting && !Caveman.intervals.shooting){
+			Caveman.laserbeams.push(new LaserBeam({	position: new Vector2d(cPlayer.position.x, cPlayer.position.y),
+														sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 3),
+														id: i}));
+			Caveman.intervals.shooting = setInterval(function(){
+				Caveman.laserbeams.push(new LaserBeam({	position: new Vector2d(cPlayer.position.x, cPlayer.position.y),
+														sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 3),
+														id: i}));
+			}, 500)
+		}else if(!cPlayer.shooting && Caveman.intervals.shooting) {
+			clearInterval(Caveman.intervals.shooting);
+			Caveman.intervals.shooting = false;
+		}
+
+		Caveman.laserbeams.map(function(l){
+			l.update(dt);
+			Objects.add(l);
 		})
 
 		Caveman.enemies.map(function(enemy){
 			Objects.retrive(enemy).map(function(obj, i){
-				if(collision = Caveman.checkForCollision(enemy, obj)){
-					if(obj.type == 'platform' || obj.type == 'waypoint'){
-						if(collision.site == 'top'){
-							enemy.position.y += collision.offset_top;
-							enemy.dy = 0;
-						}else if(collision.site == 'bottom'){
-							enemy.position.y -= collision.offset_bottom;
-			                enemy.dy = 0;
-			                enemy.falling = false;
-			                enemy.jumping = false;
-						}else if(collision.site == 'left'){
-							enemy.position.x += collision.offset_left;
-			                enemy.dx = 0;
-			                enemy.direction = 'right';
-						}else if(collision.site == 'right'){
-							enemy.position.x -= collision.offset_right;
-			                enemy.dx = 0;
-			                enemy.direction = 'left';
-						}
+				if((obj.type == 'platform' || obj.type == 'waypoint') && (collision = Caveman.checkForCollision(enemy, obj))){
+					if(collision.site == 'top'){
+						enemy.position.y += collision.offset_top;
+						enemy.dy = 0;
+					}else if(collision.site == 'bottom'){
+						enemy.position.y -= collision.offset_bottom;
+		                enemy.dy = 0;
+		                enemy.falling = false;
+		                enemy.jumping = false;
+					}else if(collision.site == 'left'){
+						enemy.position.x += collision.offset_left;
+		                enemy.dx = 0;
+		                enemy.direction = 'right';
+					}else if(collision.site == 'right'){
+						enemy.position.x -= collision.offset_right;
+		                enemy.dx = 0;
+		                enemy.direction = 'left';
 					}
+				}else if(obj.type == 'laserbeam' && Caveman.checkForCollisionPixelPerfect(enemy, obj)){
+					Caveman.enemies = Caveman.enemies.filter(function(elem, i){
+						return elem.id !== enemy.id;
+					})
+					Caveman.laserbeams = Caveman.laserbeams.filter(function(elem, i){
+						return elem.id !== obj.id;
+					})
 				}
 			});
 		})
-
 
 		
 		if(cPlayer.position.x > 224){
@@ -245,9 +250,15 @@ window.onload = function(){
 			UserInterface.position.y = 20;
 		}
 
+		Caveman.laserbeams = Caveman.laserbeams.filter(function(l){
+			return (l.position.x <= l.start_position.x+l.range);
+		})
+
 		if(!cPlayer.dead && (cPlayer.position.x > (Map.json_map.width*Map.json_map.tilewidth)*2 || cPlayer.position.y > (Map.json_map.height*Map.json_map.tileheight)*2)){
 			cPlayer.die();
 		}
+
+
 		
 	})
 

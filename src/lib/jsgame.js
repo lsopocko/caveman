@@ -117,6 +117,7 @@ function Sprite(filename, screen, width, hegiht, ticks_per_frame){
 	if(filename != undefined && filename != "" && filename != null){
 		this.image = new Image();
 		this.image.src = filename;
+		this.updateCurrentFrame();
 	}else{
 		console.log('unable to load sprite');
 	}
@@ -200,6 +201,9 @@ function LaserBeam(params){
 	GameObject.call(this, params);
 	this.type = 'laserbeam';
 	this.sprite.sourceY = 32;
+	this.start_position = new Vector2d(params.position.x, params.position.y);
+	this.speed = 2;
+	this.range = 100;
 }
 
 LaserBeam.prototype = Object.create(GameObject.prototype);
@@ -215,7 +219,7 @@ LaserBeam.prototype.draw = function(){
 }
 
 LaserBeam.prototype.update = function(){
-
+	this.position.x += this.speed;
 }
 
 // Life prototype
@@ -371,6 +375,7 @@ Enemy.prototype.moveLeft = function(){
 function Player(params){
 	Character.call(this, params);
 	this.shoting = false;
+	this.has_pistol = false;
 }
 
 Player.prototype = Object.create(Character.prototype);
@@ -436,32 +441,32 @@ Player.prototype.update = function(dt, Key){
 	this.ddy = this.gravity;
 
 	if(!this.dead){
-		if (Key.isDown(Key.LEFT))
+		if (Key.isDown(Key.LEFT) && !Key.isDown(Key.CTRL))
 	      	this.ddx = this.ddx - acceleration;
 	    else if (wasleft)
 	      	this.ddx = this.ddx + friction;
 
-		if (Key.isDown(Key.RIGHT))
+		if (Key.isDown(Key.RIGHT) && !Key.isDown(Key.CTRL))
 	      	this.ddx = this.ddx + acceleration;
 	    else if (wasright)
 	      	this.ddx = this.ddx - friction;
 
-	  	if (Key.isDown(Key.SPACE) && !this.jumping && !falling) {
+	  	if (Key.isDown(Key.SPACE) && !this.jumping && !falling && !Key.isDown(Key.CTRL)) {
 
 			this.ddy = this.ddy - this.jump_height;
 			this.jumping = true;
 			//Game.jumpAudio.play();
 	    }
 
-	    if(Key.isDown(Key.RIGHT) || wasright){
+	    if((Key.isDown(Key.RIGHT) || wasright) && !Key.isDown(Key.CTRL)){
 	    	this.moveRight();
 	    }
 
-	    if(Key.isDown(Key.LEFT) || wasleft){
+	    if((Key.isDown(Key.LEFT) || wasleft) && !Key.isDown(Key.CTRL)){
 	    	this.moveLeft();
 	    }
 
-	    if(Key.isDown(Key.CTRL)){
+	    if(Key.isDown(Key.CTRL) && this.has_pistol && !Key.isDown(Key.RIGHT) && !Key.isDown(Key.LEFT)){
 	    	this.shot();
 	    }else{
 	    	this.shooting = false;
@@ -473,8 +478,8 @@ Player.prototype.update = function(dt, Key){
 	    	this.jumpRight();	
 	    }else if(!Key.isDown(Key.SPACE) && !Key.isDown(Key.LEFT) && !Key.isDown(Key.RIGHT) && !Key.isDown(Key.CTRL) && !wasright && !wasleft && !this.falling){
 	    	this.stop();
-	    }
-
+	    } 
+  
 	    horizontal_movement = Math.round(dt * this.dx);
 		this.position.x = this.position.x + horizontal_movement;
 
