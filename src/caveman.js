@@ -23,7 +23,7 @@ window.onload = function(){
 	Caveman.onInit(function(){
 		window.addEventListener('keyup', function(event) { Keyboard.onKeyup(event); }, false);
 		window.addEventListener('keydown', function(event) { Keyboard.onKeydown(event); }, false);
-		Caveman.addSprite('items', new Sprite('/assets/sprites/items.png', Scene, 16, 16, 5));
+		
 		Map.generateTiles();
 		Map.json_map.layers[2].objects.map(function(object, i){
 
@@ -35,9 +35,32 @@ window.onload = function(){
 													sprite: new Sprite('/assets/sprites/enemies.png', Scene, 16, 16, 5),
 													id: i}));
 			}
+			
+
+			if(object.type == 'life'){
+				Caveman.items.push(new Life({	position: new Vector2d(object.x, object.y-16),
+												sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 1),
+												id: i}));
+			}
+
+			if(object.type == 'pistol'){
+				Caveman.items.push(new Pistol({	position: new Vector2d(object.x, object.y-16),
+												sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 1),
+												id: i}));
+			}
+
+			if(object.type == 'coin'){
+				Caveman.coins.push(new Coin({	position: new Vector2d(object.x, object.y-16),
+												sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, object.properties.ticks_per_frame),
+												id: i}));
+			}
+
+
 		});
 
-		Map.loadObjects();
+
+
+		//Map.loadObjects();
 
 		Scene.resize((Map.json_map.width*Map.json_map.tilewidth), (Map.json_map.height*Map.json_map.tilewidth));
 	})
@@ -58,8 +81,20 @@ window.onload = function(){
 
 		//Map.drawObjects(Caveman.ticks);
 
-		Caveman.enemies.map(function(enemy){
-			enemy.draw()
+		Caveman.enemies.map(function(e){
+			e.draw()
+		})
+
+		Caveman.coins.map(function(c){
+			c.draw()
+		})
+
+		Caveman.items.map(function(i){
+			i.draw()
+		})
+
+		Caveman.laserbeams.map(function(l){
+			l.draw()
 		})
 
 		cPlayer.draw();
@@ -81,14 +116,40 @@ window.onload = function(){
 		Objects.clear();
 		cPlayer.update(dt, Keyboard);
 
+
+		if(cPlayer.shooting && !Caveman.intervals.shooting){
+			Caveman.laserbeams.push(new LaserBeam({	position: new Vector2d(cPlayer.position.x+16, cPlayer.position.y),
+														sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 3),
+														id: i}));
+			Caveman.intervals.shooting = setInterval(function(){
+				Caveman.laserbeams.push(new LaserBeam({	position: new Vector2d(cPlayer.position.x+16, cPlayer.position.y+8),
+														sprite: new Sprite('/assets/sprites/items.png', Scene, 16, 16, 3),
+														id: i}));
+			}, 500)
+		}else if(!cPlayer.shooting && Caveman.intervals.shooting) {
+			console.log('clear interval');
+			clearInterval(Caveman.intervals.shooting);
+			Caveman.intervals.shooting = false;
+		}
+
+
 		Caveman.enemies.map(function(enemy){
 			enemy.update(dt);
-			// This i cousing problems with disapereng enemis
-			// Map.json_map.layers[2].objects[enemy.id].x = enemy.position.x;
-			// Map.json_map.layers[2].objects[enemy.id].y = enemy.position.y;
 			Objects.add(enemy);
 		})
 
+		Caveman.coins.map(function(coin){
+			Objects.add(coin);
+		})
+
+		Caveman.items.map(function(item){
+			Objects.add(item);
+		})
+
+		Caveman.laserbeams.map(function(l){
+			l.update(dt);
+			Objects.add(l);
+		})
 
 		UserInterface.update(cPlayer);
 
@@ -120,6 +181,15 @@ window.onload = function(){
 	
 			}else if(obj.type == 'enemy' && !cPlayer.dead && Caveman.checkForCollisionPixelPerfect(cPlayer, obj)){
 				cPlayer.die();
+			}else if(obj.type == 'coin' && Caveman.checkForCollisionPixelPerfect(cPlayer, obj)){
+				Caveman.coins = Caveman.coins.filter(function(elem, i){
+					return elem.id !== obj.id;
+				})
+			}else if(obj.type == 'life' && Caveman.checkForCollisionPixelPerfect(cPlayer, obj)){
+				console.log('life');
+				Caveman.items = Caveman.items.filter(function(elem, i){
+					return elem.id !== obj.id;
+				})
 			}
 		})
 
@@ -149,7 +219,7 @@ window.onload = function(){
 			});
 		})
 
-		
+
 		
 		if(cPlayer.position.x > 224){
 			

@@ -157,6 +157,105 @@ Sprite.prototype.draw = function(x, y){
 	}
 }
 
+// Gameobject prototype
+
+function GameObject(params){
+	this.position = params.hasOwnProperty('position') ? params.position : {x:0, y:0};
+	this.sprite = params.hasOwnProperty('sprite') ? params.sprite : null;
+	this.id = params.hasOwnProperty('id') ? params.id : 0;
+	this.ticks = 0;
+}
+
+GameObject.prototype.draw = function(){
+	this.ticks++;
+	if(this.ticks > this.sprite.ticks_per_frame){
+		this.ticks = 0;
+		this.sprite.sourceX = this.sprite.sourceX == 48 ? 0 : this.sprite.sourceX+16;
+	}
+	this.sprite.draw(this.position.x, this.position.y);
+}
+
+GameObject.prototype.update = function(dt){
+
+}
+
+GameObject.prototype.delete = function(){
+	
+}
+
+// Coin prototype
+
+function Coin(params){
+	GameObject.call(this, params);
+	this.type = 'coin';
+	this.sprite.sourceY = 16;
+}
+
+Coin.prototype = Object.create(GameObject.prototype);
+Coin.prototype.constructor = Coin;
+
+// LaserBeam prototype
+
+function LaserBeam(params){
+	GameObject.call(this, params);
+	this.type = 'laserbeam';
+	this.sprite.sourceY = 32;
+}
+
+LaserBeam.prototype = Object.create(GameObject.prototype);
+LaserBeam.prototype.constructor = LaserBeam;
+
+LaserBeam.prototype.draw = function(){
+	this.ticks++;
+	if(this.ticks > this.sprite.ticks_per_frame){
+		this.ticks = 0;
+		this.sprite.sourceX = this.sprite.sourceX == 32 ? 0 : this.sprite.sourceX+16;
+	}
+	this.sprite.draw(this.position.x, this.position.y);
+}
+
+LaserBeam.prototype.update = function(){
+
+}
+
+// Life prototype
+
+function Life(params){
+	GameObject.call(this, params);
+	this.type = 'life';
+	this.sprite.sourceY = 48;
+	this.sprite.sourceX = 16;
+}
+
+
+Life.prototype = Object.create(GameObject.prototype);
+Life.prototype.constructor = Life;
+
+
+Life.prototype.draw = function(){
+	this.sprite.draw(this.position.x, this.position.y);
+}
+
+// Pistol prototype
+
+function Pistol(params){
+	GameObject.call(this, params);
+	this.type = 'pistol';
+	this.sprite.sourceY = 48;
+	this.sprite.sourceX = 0;
+}
+
+
+Pistol.prototype = Object.create(GameObject.prototype);
+Pistol.prototype.constructor = Pistol;
+
+
+Pistol.prototype.draw = function(){
+	this.sprite.draw(this.position.x, this.position.y);
+}
+
+
+
 // Character prototype
 
 function Character(params){
@@ -271,6 +370,7 @@ Enemy.prototype.moveLeft = function(){
 
 function Player(params){
 	Character.call(this, params);
+	this.shoting = false;
 }
 
 Player.prototype = Object.create(Character.prototype);
@@ -302,6 +402,11 @@ Player.prototype.jumpRight = function(){
 Player.prototype.jumpLeft = function(){
 	this.sprite.sourceY = 48;
 	this.sprite.sourceX = 0;
+}
+Player.prototype.shot = function(){
+	this.sprite.sourceY = 0;
+	this.sprite.sourceX = 48;
+	this.shooting = true;
 }
 
 Player.prototype.die = function(){
@@ -356,11 +461,17 @@ Player.prototype.update = function(dt, Key){
 	    	this.moveLeft();
 	    }
 
+	    if(Key.isDown(Key.CTRL)){
+	    	this.shot();
+	    }else{
+	    	this.shooting = false;
+	    }
+
 	    if(Key.isDown(Key.SPACE) && (Key.isDown(Key.LEFT) || wasleft)){
 	    	this.jumpLeft();
 	    }else if(Key.isDown(Key.SPACE) && (Key.isDown(Key.RIGHT) || wasright)){
 	    	this.jumpRight();	
-	    }else if(!Key.isDown(Key.SPACE) && !Key.isDown(Key.LEFT) && !Key.isDown(Key.RIGHT) && !wasright && !wasleft && !this.falling){
+	    }else if(!Key.isDown(Key.SPACE) && !Key.isDown(Key.LEFT) && !Key.isDown(Key.RIGHT) && !Key.isDown(Key.CTRL) && !wasright && !wasleft && !this.falling){
 	    	this.stop();
 	    }
 
@@ -420,6 +531,7 @@ function KeyboardEvents(){
 	this.A = 65;
 	this.D = 68;
 	this.SPACE = 32;
+	this.CTRL = 17;
 }
 
 KeyboardEvents.prototype.isDown = function(keyCode) {
@@ -459,14 +571,8 @@ function MapGenerator(json_map, tiles_sprite, screen, viewport){
 	this.json_map = json_map;
 	this.tiles_sprite = tiles_sprite;
 	this.tiles = [];
-	this.coliders = [];
-	this.items = [];
-	this.coins = [];
-	this.enemies = [];
-	this.princess = [];
 	this.screen = screen;
 	this.viewport = viewport;
-	this.objects = [];
 }
 
 MapGenerator.prototype.generateTiles = function(){
@@ -493,22 +599,7 @@ MapGenerator.prototype.drawTile = function(x, y, tile_index){
 									this.json_map.tilewidth, 
 									this.json_map.tileheight);
 }
-MapGenerator.prototype.loadObjects = function(){
-	self = this;
-	this.json_map.layers[2].objects.map(function(object, i){
-		this.push = {	
-						position: {x: object.x, y:object.y},
-					 	type: object.type,
-					 	//sprite: new Sprite(),
-						animated: object.properties.animated && object.properties.animated == '1'? true : false,
-						ticks_per_frame: object.properties.ticks_per_frame && object.properties.ticks_per_frame !== '0'? object.properties.ticks_per_frame*1 : 0,
-						id: object.id,
-						width: object.width,
-						height: object.height,
-						current_frame: 0
-					}
-	});
-}
+
 MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	self = this;
 
@@ -546,31 +637,6 @@ MapGenerator.prototype.drawMap = function(offset_x, offset_y){
 	});			
 }
 
-MapGenerator.prototype.deleteObject = function(id){
-	this.json_map.layers[2].objects = this.json_map.layers[2].objects.filter(function(e){
-		return e.id !== id;
-	});
-}
-
-MapGenerator.prototype.drawObjects = function(ticks){
-	that = this;
-	this.json_map.layers[2].objects.map(function(object, i){
-		if(object.gid && object.visible){
-			if(object.properties.animated == '1'){
-				if(typeof that.json_map.layers[2].objects[i].current_frame == 'undefined'){
-					that.json_map.layers[2].objects[i].current_frame = 1;
-				}else if(that.json_map.layers[2].objects[i].current_frame >= object.properties.frames*1){
-					that.json_map.layers[2].objects[i].current_frame = 1;
-				}
-				that.drawTile((object.x)/that.json_map.tilewidth, (object.y-object.height)/that.json_map.tileheight, (object.gid+that.json_map.layers[2].objects[i].current_frame)-that.json_map.tilesets[0].firstgid);
-				if(!(ticks%object.properties.ticks_per_frame)) that.json_map.layers[2].objects[i].current_frame++;
-				
-			}else{
-				that.drawTile((object.x)/that.json_map.tilewidth, (object.y-object.height)/that.json_map.tileheight, object.gid-that.json_map.tilesets[0].firstgid);
-			}
-		}
-	});
-}
 
 
 // Platformer prototype
@@ -584,8 +650,11 @@ function Platformer(screen){
 	this.now, this.last = timestamp();
 	this.ticks = 0;
 	this.dt = 0;
-	this.sprites = [];
 	this.enemies = [];
+	this.coins = [];
+	this.items = [];
+	this.laserbeams = [];
+	this.intervals = {shooting: false};
 }
 
 Platformer.prototype.onInit = function (callback){ 
@@ -636,17 +705,7 @@ Platformer.prototype.frame = function(){
 	this.last = this.now;
 	requestAnimationFrame(() => this.frame(), this.screen.canvas);
 }
-Platformer.prototype.addSprite = function(name, sprite){
-	this.sprites.push({	sprite_name: name, 
-						sprite: sprite});
-}
 
-Platformer.prototype.getSprite = function(name){
-	return this.sprites.filter(function(item){
-		if(item.sprite_name == name) return item;
-	})[0].sprite;
-
-}
 
 Platformer.prototype.checkForCollision = function(obj_1, obj_2){
 

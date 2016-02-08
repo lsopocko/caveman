@@ -37,7 +37,7 @@ json_map = { "height":32,
                      "animated":"0"
                     },
                  "rotation":0,
-                 "type":"item",
+                 "type":"pistol",
                  "visible":true,
                  "width":16,
                  "x":208,
@@ -148,60 +148,6 @@ json_map = { "height":32,
                  "width":32,
                  "x":384,
                  "y":112
-                }, 
-                {
-                 "gid":49,
-                 "height":16,
-                 "id":15,
-                 "name":"Coin",
-                 "properties":
-                    {
-                     "animated":"1",
-                     "frames":"4",
-                     "ticks_per_frame":"6"
-                    },
-                 "rotation":0,
-                 "type":"coin",
-                 "visible":true,
-                 "width":16,
-                 "x":144,
-                 "y":96
-                }, 
-                {
-                 "gid":49,
-                 "height":16,
-                 "id":16,
-                 "name":"Coin",
-                 "properties":
-                    {
-                     "animated":"1",
-                     "frames":"4",
-                     "ticks_per_frame":"6"
-                    },
-                 "rotation":0,
-                 "type":"coin",
-                 "visible":true,
-                 "width":16,
-                 "x":176,
-                 "y":96
-                }, 
-                {
-                 "gid":49,
-                 "height":16,
-                 "id":17,
-                 "name":"Coin",
-                 "properties":
-                    {
-                     "animated":"1",
-                     "frames":"4",
-                     "ticks_per_frame":"6"
-                    },
-                 "rotation":0,
-                 "type":"coin",
-                 "visible":true,
-                 "width":16,
-                 "x":208,
-                 "y":96
                 }, 
                 {
                  "height":16,
@@ -427,6 +373,38 @@ json_map = { "height":32,
                  "width":16,
                  "x":704,
                  "y":64
+                }, 
+                {
+                 "gid":66,
+                 "height":16,
+                 "id":48,
+                 "name":"Life",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"life",
+                 "visible":true,
+                 "width":16,
+                 "x":320,
+                 "y":96
+                }, 
+                {
+                 "gid":49,
+                 "height":16,
+                 "id":50,
+                 "name":"Coin",
+                 "properties":
+                    {
+                     "ticks_per_frame":"6"
+                    },
+                 "rotation":0,
+                 "type":"coin",
+                 "visible":true,
+                 "width":16,
+                 "x":224,
+                 "y":128
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -435,7 +413,7 @@ json_map = { "height":32,
          "x":0,
          "y":0
         }],
- "nextobjectid":48,
+ "nextobjectid":52,
  "orientation":"orthogonal",
  "properties":
     {
