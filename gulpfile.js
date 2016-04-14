@@ -1,20 +1,32 @@
-var gulp = require('gulp'),
-    uglify = require('gulp-uglify'),
-    del = require('del');
+var gulp           = require('gulp'),
+    browserify     = require('browserify'),
+    source         = require('vinyl-source-stream'),
+    uglify         = require('gulp-uglify'),
+    rename         = require('gulp-rename'),
+    concat         = require('gulp-concat'),
+    jshint         = require('gulp-jshint');
 
 
-	gulp.task('uglify',['clean'], function(){
-	  	return gulp.src(['src/*.js','src/**/*.js'])
-	    .pipe(uglify())
-	    .pipe(gulp.dest('build'));
-	});
+gulp.task('scripts', function() {
+  return  gulp.src(['src/*.js', '!src/pixi.min.js'])
+          .pipe(jshint())
+          .pipe(jshint.reporter('jshint-stylish'))
+});
 
-	gulp.task('clean', function(){
-	  	return del(['dest']);
-	});
+gulp.task('build', function() {
+  return  browserify('src/app.js')
+          .bundle()
+          .pipe(source('build.js'))
+          .pipe(gulp.dest('build'));
+})
 
-	gulp.task('watch', function() {
-		gulp.watch(['src/*.js','src/**/*.js'], ['uglify']);
- 	});
+gulp.task('uglify', function(){
+  return  gulp.src(['src/build/bundle.js'])
+          .pipe(uglify())
+          .pipe(gulp.dest('src/build/'));
+})
 
-	gulp.task('default', ['watch']);
+
+gulp.task('default', ['scripts', 'build'], function(){
+  gulp.watch('src/*.js', ['scripts', 'build']);
+})

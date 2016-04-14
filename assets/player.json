@@ -1,0 +1,49 @@
+{"frames": {
+	"walk0":
+		{
+		    "frame": {"x":0,"y":0,"w":33,"h":38},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":132,"h":38},
+			"sourceSize": {"w":132,"h":38}
+		},
+	"walk1":
+		{
+		    "frame": {"x":33,"y":0,"w":33,"h":38},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":132,"h":38},
+			"sourceSize": {"w":132,"h":38}
+		},
+	"walk2":
+		{
+		    "frame": {"x":66,"y":0,"w":33,"h":38},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":132,"h":38},
+			"sourceSize": {"w":132,"h":38}
+		},
+	"walk3":
+		{
+		    "frame": {"x":99,"y":0,"w":33,"h":38},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":132,"h":38},
+			"sourceSize": {"w":132,"h":38}
+		},
+	"stop":
+		{
+		    "frame": {"x":0,"y":0,"w":33,"h":38},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":132,"h":38},
+			"sourceSize": {"w":132,"h":38}
+		}
+	},
+	"meta": {
+	    "image": "sprites/player_2.png",
+	    "format": "RGBA8888",
+	    "size": {"w":132,"h":38},
+	    "scale": "1"
+	}
+}

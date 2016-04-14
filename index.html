@@ -9,34 +9,24 @@
         <title>Yellow Caveman</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
         <style>
-        body{
-			position: absolute;
-			width: 100%;
-			height: 100%;
-			padding: 0px;
-			top: 0;
-			right: 0;
-			left: 0;
-			bottom:0;
-			overflow: hidden;
-			background: #000;
-			margin: 0;
-		}
-
-		#screen{
-			left: 50%;
-			top: 50%;
-			position: absolute;
-			
-		}
-		</style>
+            body{
+                padding:0;
+                margin: 0;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom:0;
+            }
+            canvas{
+                margin: 0;
+                padding:0;
+                display: block;
+            }
+        </style>
     </head>
-    <body>
-        <canvas id="screen"></canvas>
-        <script src="map-1.json"></script>
-        <script src="src/lib/jsgame.js"></script>
-        <script src="src/caveman.js"></script>
+    <body>      
+        <script src="build/build.js"></script>
     </body>
 </html>
