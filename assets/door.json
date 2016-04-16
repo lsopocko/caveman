@@ -1,0 +1,97 @@
+{"frames": {
+	"open0":
+		{
+		    "frame": {"x":0,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"open1":
+		{
+		    "frame": {"x":18,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"open2":
+		{
+		    "frame": {"x":36,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"open3":
+		{
+		    "frame": {"x":54,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"open4":
+		{
+		    "frame": {"x":72,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"close0":
+		{
+		    "frame": {"x":72,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"close1":
+		{
+		    "frame": {"x":54,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"close2":
+		{
+		    "frame": {"x":36,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"close3":
+		{
+		    "frame": {"x":18,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"close4":
+		{
+		    "frame": {"x":0,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		},
+	"stop":
+		{
+		    "frame": {"x":72,"y":0,"w":18,"h":48},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":90,"h":48},
+			"sourceSize": {"w":90,"h":48}
+		}
+	},
+	"meta": {
+	    "image": "sprites/door.png",
+	    "format": "RGBA8888",
+	    "size": {"w":90,"h":48},
+	    "scale": "1"
+	}
+}

@@ -21,6 +21,8 @@ window.Caveman = (function(Caveman, PIXI, _){
     function init(){
         PIXI.loader
         .add('Player', 'assets/player.json')
+        .add('Door', 'assets/door.json')
+        //.add('Tileset', 'assets/tileset.json')
         .load(create);
 
         document.addEventListener('mousemove', function(e){
@@ -33,13 +35,21 @@ window.Caveman = (function(Caveman, PIXI, _){
         Renderer.init({fullscreen: true});
         Keyboard = new KeyboardEvents(window);
 
+        Door = new AnimatedObject(PIXI.loader.resources['Door'].textures);
+        Door.animations.add('open', ['open0', 'open1', 'open2', 'open3', 'open4'], 3);
+
         Player = new PlayerObject(PIXI.loader.resources["Player"].textures);
         Player.animations.add('walk', ['walk0', 'walk1', 'walk2', 'walk3'], 8);
         Player.animations.add('stop', ['stop'], 10);
 
-        Player.x = 150;
-        Player.y = 150;
+        Player.x = 50;
+        Player.y = 50;
 
+        Door.x = 100;
+        Door.y = 100;
+
+        
+        Renderer.addLayer('level', Door);
         Renderer.addLayer('player', Player);
 
         frame();
@@ -59,7 +69,7 @@ window.Caveman = (function(Caveman, PIXI, _){
             Player.y += yDistance;
             Player.walk();
         }
-        
+        Door.animate('open');
     }
 
     function frame(){

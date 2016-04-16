@@ -1,0 +1,17 @@
+{"frames": {
+	"walk0":
+		{
+		    "frame": {"x":0,"y":0,"w":24,"h":24},
+		    "rotated": false,
+		    "trimmed": false,
+		    "spriteSourceSize": {"x":0,"y":0,"w":432,"h":432},
+			"sourceSize": {"w":432,"h":432}
+		}
+	},
+	"meta": {
+	    "image": "sprites/player_2.png",
+	    "format": "RGBA8888",
+	    "size": {"w":132,"h":38},
+	    "scale": "1"
+	}
+}
