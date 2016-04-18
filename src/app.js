@@ -45,8 +45,8 @@ window.Caveman = (function(Caveman, PIXI, _){
         Player.x = 50;
         Player.y = 50;
 
-        Door.x = 100;
-        Door.y = 100;
+        Door.x = 200;
+        Door.y = 200;
 
         
         Renderer.addLayer('level', Door);
