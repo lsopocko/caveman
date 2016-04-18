@@ -72,6 +72,10 @@ window.Caveman = (function(Caveman, PIXI, _){
         Door.animate('open');
     }
 
+    function el(){
+        
+    }
+
     function frame(){
         now = timestamp();
         dt = dt + Math.min(1, (now - last) / 1000);
